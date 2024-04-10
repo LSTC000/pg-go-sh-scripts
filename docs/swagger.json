@@ -1,0 +1,299 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is an API for running bash scripts",
+        "title": "Bash Scripts",
+        "contact": {},
+        "version": "1.0.0"
+    },
+    "host": "0.0.0.0:8000",
+    "basePath": "/api/v1",
+    "paths": {
+        "/bash": {
+            "post": {
+                "description": "Create bash script",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bash"
+                ],
+                "summary": "Create",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Bash script file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bash.Bash"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/bash/execute": {
+            "post": {
+                "description": "Execute bash script",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bash"
+                ],
+                "summary": "Execute",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Execute type: if true, then in a multithreading, otherwise in a single thread",
+                        "name": "isSync",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Execute bash script model",
+                        "name": "execute",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bash.ExecBashDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/bash/execute/list": {
+            "post": {
+                "description": "Execute list of bash scripts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bash"
+                ],
+                "summary": "Execute list",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Execute type: if true, then in a multithreading, otherwise in a single thread",
+                        "name": "isSync",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "List of execute bash script models",
+                        "name": "execute",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/bash.ExecBashDTO"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/bash/list": {
+            "get": {
+                "description": "Get list of bash scripts",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bash"
+                ],
+                "summary": "Get list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/bash.Bash"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/bash/{id}": {
+            "get": {
+                "description": "Get bash script by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bash"
+                ],
+                "summary": "Get by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of bash script",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bash.Bash"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/bash/{id}/file": {
+            "get": {
+                "description": "Get bash script file by id",
+                "produces": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "tags": [
+                    "Bash"
+                ],
+                "summary": "Get file by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of bash script",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.HTTPError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "bash.Bash": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "bash.ExecBashDTO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "timeoutSeconds": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.HTTPError": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "httpCode": {
+                    "type": "integer"
+                },
+                "serviceCode": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Message": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

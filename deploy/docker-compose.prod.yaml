@@ -1,0 +1,32 @@
+version: "3.8"
+
+volumes:
+  postgres-data:
+
+networks:
+  net:
+
+services:
+  app:
+    container_name: sh-scripts
+    build: ..
+    env_file:
+      - ../.env
+    restart: always
+    depends_on:
+      - postgres
+    networks:
+      - net
+
+  postgres:
+    container_name: postgres-sh-scripts
+    image: postgres:15
+    env_file:
+      - ../.env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: always
+    ports:
+      - "5432:5432"
+    networks:
+      - net

@@ -1,0 +1,7 @@
+api:
+  trustedProxies:
+    - "127.0.0.1"
+
+postgres:
+  retryCount: 5
+  retrySleepSeconds: 2s

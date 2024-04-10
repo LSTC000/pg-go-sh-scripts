@@ -1,0 +1,198 @@
+basePath: /api/v1
+definitions:
+  bash.Bash:
+    properties:
+      body:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+    type: object
+  bash.ExecBashDTO:
+    properties:
+      id:
+        type: string
+      timeoutSeconds:
+        type: integer
+    type: object
+  model.HTTPError:
+    properties:
+      detail:
+        type: string
+      httpCode:
+        type: integer
+      serviceCode:
+        type: integer
+    type: object
+  model.Message:
+    properties:
+      message:
+        type: string
+    type: object
+host: 0.0.0.0:8000
+info:
+  contact: {}
+  description: This is an API for running bash scripts
+  title: Bash Scripts
+  version: 1.0.0
+paths:
+  /bash:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create bash script
+      parameters:
+      - description: Bash script file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bash.Bash'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.HTTPError'
+      summary: Create
+      tags:
+      - Bash
+  /bash/{id}:
+    get:
+      description: Get bash script by id
+      parameters:
+      - description: ID of bash script
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bash.Bash'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.HTTPError'
+      summary: Get by id
+      tags:
+      - Bash
+  /bash/{id}/file:
+    get:
+      description: Get bash script file by id
+      parameters:
+      - description: ID of bash script
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/x-www-form-urlencoded
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.HTTPError'
+      summary: Get file by id
+      tags:
+      - Bash
+  /bash/execute:
+    post:
+      consumes:
+      - application/json
+      description: Execute bash script
+      parameters:
+      - description: 'Execute type: if true, then in a multithreading, otherwise in
+          a single thread'
+        in: query
+        name: isSync
+        required: true
+        type: boolean
+      - description: Execute bash script model
+        in: body
+        name: execute
+        required: true
+        schema:
+          $ref: '#/definitions/bash.ExecBashDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.HTTPError'
+      summary: Execute
+      tags:
+      - Bash
+  /bash/execute/list:
+    post:
+      consumes:
+      - application/json
+      description: Execute list of bash scripts
+      parameters:
+      - description: 'Execute type: if true, then in a multithreading, otherwise in
+          a single thread'
+        in: query
+        name: isSync
+        required: true
+        type: boolean
+      - description: List of execute bash script models
+        in: body
+        name: execute
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/bash.ExecBashDTO'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.HTTPError'
+      summary: Execute list
+      tags:
+      - Bash
+  /bash/list:
+    get:
+      description: Get list of bash scripts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/bash.Bash'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.HTTPError'
+      summary: Get list
+      tags:
+      - Bash
+swagger: "2.0"
