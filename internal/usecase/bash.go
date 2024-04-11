@@ -1,8 +1,10 @@
 package usecase
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"pg-sh-scripts/internal/common"
@@ -36,7 +38,32 @@ type (
 		logger     *logging.Logger
 		httpErrors *config.HTTPErrors
 	}
+
+	PgScanner struct{}
 )
+
+func (s *PgScanner) Scan(stdout io.ReadCloser, cmd gosha.Cmd) error {
+	scanner := bufio.NewScanner(stdout)
+	bashLogService := service.GetBashLogService()
+
+	scanner.Split(bufio.ScanWords)
+	for scanner.Scan() {
+		msg := scanner.Text()
+		bashId, err := uuid.FromString(cmd.Title)
+		if err != nil {
+			return err
+		}
+
+		createBashLogDTO := dto.CreateBashLogDTO{
+			BashId: bashId,
+			Body:   msg,
+		}
+		if _, err := bashLogService.Create(context.Background(), createBashLogDTO); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 // GetBashById
 // @Summary Get by id
@@ -197,7 +224,7 @@ func (u *BashUseCase) ExecBash(ctx *gin.Context) {
 		},
 	}
 
-	goshaExec := common.GetGoshaExec(commands)
+	goshaExec := common.GetGoshaExec(&PgScanner{}, commands)
 	message := schema.Message{Message: "ok"}
 
 	if isSync {
@@ -270,7 +297,7 @@ func (u *BashUseCase) ExecBashList(ctx *gin.Context) {
 		}
 	}()
 
-	goshaExec := common.GetGoshaExec(commands)
+	goshaExec := common.GetGoshaExec(&PgScanner{}, commands)
 	message := schema.Message{Message: "ok"}
 
 	if isSync {
