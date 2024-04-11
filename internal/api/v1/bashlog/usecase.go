@@ -31,6 +31,7 @@ type (
 // @Produce json
 // @Success 200 {array} BashLog
 // @Failure 500 {object} model.HTTPError
+// @Param bashId path string true "ID of bash script"
 // @Router /bash/log/{bashId}/list [get]
 func (u *UseCase) GetBashLogListByBashID(ctx *gin.Context) {
 	httpErrors := config.GetHTTPErrors()

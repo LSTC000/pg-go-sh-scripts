@@ -18,6 +18,17 @@ definitions:
       timeoutSeconds:
         type: integer
     type: object
+  bashlog.BashLog:
+    properties:
+      bashId:
+        type: string
+      body:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+    type: object
   model.HTTPError:
     properties:
       detail:
@@ -195,4 +206,29 @@ paths:
       summary: Get list
       tags:
       - Bash
+  /bash/log/{bashId}/list:
+    get:
+      description: Get list of bash logs by bash id
+      parameters:
+      - description: ID of bash script
+        in: path
+        name: bashId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/bashlog.BashLog'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.HTTPError'
+      summary: Get list by bash id
+      tags:
+      - Bash Log
 swagger: "2.0"

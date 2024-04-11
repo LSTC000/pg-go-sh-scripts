@@ -173,6 +173,44 @@
                 }
             }
         },
+        "/bash/log/{bashId}/list": {
+            "get": {
+                "description": "Get list of bash logs by bash id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bash Log"
+                ],
+                "summary": "Get list by bash id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of bash script",
+                        "name": "bashId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/bashlog.BashLog"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/bash/{id}": {
             "get": {
                 "description": "Get bash script by id",
@@ -270,6 +308,23 @@
                 },
                 "timeoutSeconds": {
                     "type": "integer"
+                }
+            }
+        },
+        "bashlog.BashLog": {
+            "type": "object",
+            "properties": {
+                "bashId": {
+                    "type": "string"
+                },
+                "body": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
                 }
             }
         },
