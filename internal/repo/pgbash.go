@@ -1,10 +1,12 @@
-package bash
+package repo
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"pg-sh-scripts/internal/common"
+	"pg-sh-scripts/internal/dto"
+	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/pkg/logging"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -12,13 +14,13 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type PgRepository struct {
+type PgBashRepository struct {
 	db     *pgxpool.Pool
 	logger *logging.Logger
 }
 
-func (p PgRepository) GetOneById(ctx context.Context, id uuid.UUID) (*Bash, error) {
-	bash := Bash{}
+func (p PgBashRepository) GetOneById(ctx context.Context, id uuid.UUID) (*model.Bash, error) {
+	bash := model.Bash{}
 
 	p.logger.Debug(fmt.Sprintf("Start getting bash by id: %s", id))
 	q := `
@@ -43,8 +45,8 @@ func (p PgRepository) GetOneById(ctx context.Context, id uuid.UUID) (*Bash, erro
 	return &bash, nil
 }
 
-func (p PgRepository) GetAll(ctx context.Context) ([]*Bash, error) {
-	bashList := make([]*Bash, 0)
+func (p PgBashRepository) GetAll(ctx context.Context) ([]*model.Bash, error) {
+	bashList := make([]*model.Bash, 0)
 
 	p.logger.Debug("Start getting bash list")
 	q := `
@@ -64,7 +66,7 @@ func (p PgRepository) GetAll(ctx context.Context) ([]*Bash, error) {
 	}
 
 	for rows.Next() {
-		bash := Bash{}
+		bash := model.Bash{}
 		if err := rows.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
@@ -79,10 +81,10 @@ func (p PgRepository) GetAll(ctx context.Context) ([]*Bash, error) {
 	return bashList, nil
 }
 
-func (p PgRepository) Create(ctx context.Context, createBash CreateBashDTO) (*Bash, error) {
-	bash := Bash{}
+func (p PgBashRepository) Create(ctx context.Context, dto dto.CreateBashDTO) (*model.Bash, error) {
+	bash := model.Bash{}
 
-	p.logger.Debug(fmt.Sprintf("Start creating bash with title: %s", createBash.Title))
+	p.logger.Debug(fmt.Sprintf("Start creating bash with title: %s", dto.Title))
 	stmt := `
 		INSERT INTO scripts.bash
 			(title, body)
@@ -91,7 +93,7 @@ func (p PgRepository) Create(ctx context.Context, createBash CreateBashDTO) (*Ba
 		RETURNING id, title, body, created_at
 	`
 
-	row := p.db.QueryRow(ctx, stmt, createBash.Title, createBash.Body)
+	row := p.db.QueryRow(ctx, stmt, dto.Title, dto.Body)
 	if err := row.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -99,19 +101,19 @@ func (p PgRepository) Create(ctx context.Context, createBash CreateBashDTO) (*Ba
 		}
 		return nil, err
 	}
-	p.logger.Debug(fmt.Sprintf("Finish creating bash with title: %s", createBash.Title))
+	p.logger.Debug(fmt.Sprintf("Finish creating bash with title: %s", dto.Title))
 
 	return &bash, nil
 }
 
-func GetPgRepository() IRepository {
+func GetPgBashRepository() IBashRepository {
 	logger := common.GetLogger()
 	pg, err := common.GetPgClient()
 	if err != nil {
 		logger.Error(fmt.Sprintf("Getting postgres client Error: %s", err))
 		panic(err)
 	}
-	return &PgRepository{
+	return &PgBashRepository{
 		db:     pg.GetDB(),
 		logger: logger,
 	}

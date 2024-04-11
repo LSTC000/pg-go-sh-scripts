@@ -1,4 +1,4 @@
-package bash
+package usecase
 
 import (
 	"context"
@@ -7,7 +7,11 @@ import (
 	"os"
 	"pg-sh-scripts/internal/common"
 	"pg-sh-scripts/internal/config"
+	"pg-sh-scripts/internal/dto"
+	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/internal/schema"
+	"pg-sh-scripts/internal/service"
+	"pg-sh-scripts/internal/util"
 	"pg-sh-scripts/pkg/gosha"
 	"pg-sh-scripts/pkg/logging"
 	"time"
@@ -18,7 +22,7 @@ import (
 )
 
 type (
-	IUseCase interface {
+	IBashUseCase interface {
 		GetBashById(ctx *gin.Context)
 		GetBashFileById(ctx *gin.Context)
 		GetBashList(ctx *gin.Context)
@@ -27,8 +31,8 @@ type (
 		ExecBashList(ctx *gin.Context)
 	}
 
-	UseCase struct {
-		service    IService
+	BashUseCase struct {
+		service    service.IBashService
 		logger     *logging.Logger
 		httpErrors *config.HTTPErrors
 	}
@@ -39,11 +43,11 @@ type (
 // @Tags Bash
 // @Description Get bash script by id
 // @Produce json
-// @Success 200 {object} Bash
+// @Success 200 {object} model.Bash
 // @Failure 500 {object} schema.HTTPError
 // @Param id path string true "ID of bash script"
 // @Router /bash/{id} [get]
-func (u *UseCase) GetBashById(ctx *gin.Context) {
+func (u *BashUseCase) GetBashById(ctx *gin.Context) {
 	bashId, err := uuid.FromString(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
@@ -68,7 +72,7 @@ func (u *UseCase) GetBashById(ctx *gin.Context) {
 // @Failure 500 {object} schema.HTTPError
 // @Param id path string true "ID of bash script"
 // @Router /bash/{id}/file [get]
-func (u *UseCase) GetBashFileById(ctx *gin.Context) {
+func (u *BashUseCase) GetBashFileById(ctx *gin.Context) {
 	bashId, err := uuid.FromString(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
@@ -81,7 +85,7 @@ func (u *UseCase) GetBashFileById(ctx *gin.Context) {
 		return
 	}
 
-	fileBuffer, err := GetBashFileBuffer(bash.Title, bash.Body)
+	fileBuffer, err := util.GetBashFileBuffer(bash.Title, bash.Body)
 	if err != nil {
 		ctx.JSON(u.httpErrors.BashGetFile.HTTPCode, u.httpErrors.BashGetFile)
 		return
@@ -96,16 +100,15 @@ func (u *UseCase) GetBashFileById(ctx *gin.Context) {
 // @Tags Bash
 // @Description Get list of bash scripts
 // @Produce json
-// @Success 200 {array} Bash
+// @Success 200 {array} model.Bash
 // @Failure 500 {object} schema.HTTPError
 // @Router /bash/list [get]
-func (u *UseCase) GetBashList(ctx *gin.Context) {
+func (u *BashUseCase) GetBashList(ctx *gin.Context) {
 	bashList, err := u.service.GetAll(context.Background())
 	if err != nil {
 		ctx.JSON(u.httpErrors.BashGetList.HTTPCode, u.httpErrors.BashGetList)
 		return
 	}
-
 	ctx.JSON(http.StatusOK, bashList)
 }
 
@@ -115,11 +118,11 @@ func (u *UseCase) GetBashList(ctx *gin.Context) {
 // @Description Create bash script
 // @Accept mpfd
 // @Produce json
-// @Success 200 {object} Bash
+// @Success 200 {object} model.Bash
 // @Failure 500 {object} schema.HTTPError
 // @Param file formData file true "Bash script file"
 // @Router /bash [post]
-func (u *UseCase) CreateBash(ctx *gin.Context) {
+func (u *BashUseCase) CreateBash(ctx *gin.Context) {
 	file, err := ctx.FormFile("file")
 	if err != nil {
 		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
@@ -127,22 +130,22 @@ func (u *UseCase) CreateBash(ctx *gin.Context) {
 	}
 
 	fileName := file.Filename
-	fileExtension := GetBashFileExtension(fileName)
+	fileExtension := util.GetBashFileExtension(fileName)
 
-	if err := ValidateBashFileExtension(fileExtension); err != nil {
+	if err := util.ValidateBashFileExtension(fileExtension); err != nil {
 		ctx.JSON(u.httpErrors.BashFileExtension.HTTPCode, u.httpErrors.BashFileExtension)
 		return
 	}
 
-	fileTitle := GetBashFileTitle(fileName)
-	fileBody, err := GetBashFileBody(file)
+	fileTitle := util.GetBashFileTitle(fileName)
+	fileBody, err := util.GetBashFileBody(file)
 	if err != nil {
 		ctx.JSON(u.httpErrors.BashFileBody.HTTPCode, u.httpErrors.BashFileBody)
 		return
 	}
 
-	createBash := CreateBashDTO{Title: fileTitle, Body: fileBody}
-	bash, err := u.service.CreateBash(context.Background(), createBash)
+	createBashDTO := dto.CreateBashDTO{Title: fileTitle, Body: fileBody}
+	bash, err := u.service.CreateBash(context.Background(), createBashDTO)
 	if err != nil {
 		ctx.JSON(u.httpErrors.BashCreate.HTTPCode, u.httpErrors.BashCreate)
 		return
@@ -160,18 +163,18 @@ func (u *UseCase) CreateBash(ctx *gin.Context) {
 // @Success 200 {object} schema.Message
 // @Failure 500 {object} schema.HTTPError
 // @Param isSync query bool true "Execute type: if true, then in a multithreading, otherwise in a single thread"
-// @Param execute body ExecBashDTO true "Execute bash script schema"
+// @Param execute body dto.ExecBashDTO true "Execute bash script schema"
 // @Router /bash/execute [post]
-func (u *UseCase) ExecBash(ctx *gin.Context) {
-	execBash := ExecBashDTO{}
+func (u *BashUseCase) ExecBash(ctx *gin.Context) {
+	execBashDTO := dto.ExecBashDTO{}
 
 	isSync := ctx.GetBool("isSync")
-	if err := ctx.ShouldBindJSON(&execBash); err != nil {
+	if err := ctx.ShouldBindJSON(&execBashDTO); err != nil {
 		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
 		return
 	}
 
-	bash, err := u.service.GetOneById(context.Background(), execBash.Id)
+	bash, err := u.service.GetOneById(context.Background(), execBashDTO.Id)
 	if err != nil {
 		ctx.JSON(u.httpErrors.BashGet.HTTPCode, u.httpErrors.BashGet)
 		return
@@ -190,7 +193,7 @@ func (u *UseCase) ExecBash(ctx *gin.Context) {
 		{
 			Title:   bash.Id.String(),
 			Path:    tmpFile.Name(),
-			Timeout: execBash.TimeoutSeconds * time.Second,
+			Timeout: execBashDTO.TimeoutSeconds * time.Second,
 		},
 	}
 
@@ -219,21 +222,21 @@ func (u *UseCase) ExecBash(ctx *gin.Context) {
 // @Success 200 {object} schema.Message
 // @Failure 500 {object} schema.HTTPError
 // @Param isSync query bool true "Execute type: if true, then in a multithreading, otherwise in a single thread"
-// @Param execute body []ExecBashDTO true "List of execute bash script models"
+// @Param execute body []dto.ExecBashDTO true "List of execute bash script models"
 // @Router /bash/execute/list [post]
-func (u *UseCase) ExecBashList(ctx *gin.Context) {
-	execBashList := make([]ExecBashDTO, 0)
+func (u *BashUseCase) ExecBashList(ctx *gin.Context) {
+	execBashDTOList := make([]dto.ExecBashDTO, 0)
 
 	isSync := ctx.GetBool("isSync")
-	if err := ctx.ShouldBindJSON(&execBashList); err != nil {
+	if err := ctx.ShouldBindJSON(&execBashDTOList); err != nil {
 		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
 		return
 	}
 
-	execBashCount := len(execBashList)
-	bashList := make([]*Bash, 0, execBashCount)
-	for _, execBash := range execBashList {
-		bash, err := u.service.GetOneById(context.Background(), execBash.Id)
+	execBashCount := len(execBashDTOList)
+	bashList := make([]*model.Bash, 0, execBashCount)
+	for _, execBashDTO := range execBashDTOList {
+		bash, err := u.service.GetOneById(context.Background(), execBashDTO.Id)
 		if err != nil {
 			ctx.JSON(u.httpErrors.BashGet.HTTPCode, u.httpErrors.BashGet)
 			return
@@ -245,7 +248,7 @@ func (u *UseCase) ExecBashList(ctx *gin.Context) {
 	commands := make([]gosha.Cmd, 0, execBashCount)
 	for i := 0; i < execBashCount; i++ {
 		bash := bashList[i]
-		execBash := execBashList[i]
+		execBashDTO := execBashDTOList[i]
 
 		tmpFile, err := gosha.GetTmpFile(bash.Body)
 		if err != nil {
@@ -257,7 +260,7 @@ func (u *UseCase) ExecBashList(ctx *gin.Context) {
 		cmd := gosha.Cmd{
 			Title:   bash.Id.String(),
 			Path:    tmpFile.Name(),
-			Timeout: execBash.TimeoutSeconds * time.Second,
+			Timeout: execBashDTO.TimeoutSeconds * time.Second,
 		}
 		commands = append(commands, cmd)
 	}
@@ -283,9 +286,9 @@ func (u *UseCase) ExecBashList(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, message)
 }
 
-func GetUseCase() IUseCase {
-	return &UseCase{
-		service:    GetService(),
+func GeBashUseCase() IBashUseCase {
+	return &BashUseCase{
+		service:    service.GetBashService(),
 		logger:     common.GetLogger(),
 		httpErrors: config.GetHTTPErrors(),
 	}

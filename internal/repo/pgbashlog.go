@@ -1,10 +1,12 @@
-package bashlog
+package repo
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"pg-sh-scripts/internal/common"
+	"pg-sh-scripts/internal/dto"
+	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/pkg/logging"
 
 	uuid "github.com/satori/go.uuid"
@@ -13,13 +15,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type PgRepository struct {
+type PgBashLogRepository struct {
 	db     *pgxpool.Pool
 	logger *logging.Logger
 }
 
-func (p PgRepository) GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*BashLog, error) {
-	bashLogList := make([]*BashLog, 0)
+func (p PgBashLogRepository) GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*model.BashLog, error) {
+	bashLogList := make([]*model.BashLog, 0)
 
 	p.logger.Debug(fmt.Sprintf("Start getting bash log list by bash id: %v", bashId))
 	q := `
@@ -41,7 +43,7 @@ func (p PgRepository) GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*
 	}
 
 	for rows.Next() {
-		bashLog := BashLog{}
+		bashLog := model.BashLog{}
 		if err := rows.Scan(&bashLog.Id, &bashLog.BashId, &bashLog.Body, &bashLog.CreatedAt); err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
@@ -56,10 +58,10 @@ func (p PgRepository) GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*
 	return bashLogList, nil
 }
 
-func (p PgRepository) Create(ctx context.Context, createBashLog CreateBashLogDTO) (*BashLog, error) {
-	bashLog := BashLog{}
+func (p PgBashLogRepository) Create(ctx context.Context, dto dto.CreateBashLogDTO) (*model.BashLog, error) {
+	bashLog := model.BashLog{}
 
-	p.logger.Debug(fmt.Sprintf("Start creating bash log for bash with id: %v", createBashLog.BashId))
+	p.logger.Debug(fmt.Sprintf("Start creating bash log for bash with id: %v", dto.BashId))
 	stmt := `
 		INSERT INTO scripts.bash_log
 			(bash_id, body)
@@ -68,7 +70,7 @@ func (p PgRepository) Create(ctx context.Context, createBashLog CreateBashLogDTO
 		RETURNING id, bash_id, body, created_at
 	`
 
-	row := p.db.QueryRow(ctx, stmt, createBashLog.BashId, createBashLog.Body)
+	row := p.db.QueryRow(ctx, stmt, dto.BashId, dto.Body)
 	if err := row.Scan(&bashLog.Id, &bashLog.BashId, &bashLog.Body, &bashLog.CreatedAt); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -76,19 +78,19 @@ func (p PgRepository) Create(ctx context.Context, createBashLog CreateBashLogDTO
 		}
 		return nil, err
 	}
-	p.logger.Debug(fmt.Sprintf("Finish creating bash log for bash with id: %v", createBashLog.BashId))
+	p.logger.Debug(fmt.Sprintf("Finish creating bash log for bash with id: %v", dto.BashId))
 
 	return &bashLog, nil
 }
 
-func GetPgRepository() IRepository {
+func GetPgBashLogRepository() IBashLogRepository {
 	logger := common.GetLogger()
 	pg, err := common.GetPgClient()
 	if err != nil {
 		logger.Error(fmt.Sprintf("Getting postgres client Error: %s", err))
 		panic(err)
 	}
-	return &PgRepository{
+	return &PgBashLogRepository{
 		db:     pg.GetDB(),
 		logger: logger,
 	}

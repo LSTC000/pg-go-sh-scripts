@@ -1,11 +1,11 @@
-package bashlog
+package usecase
 
 import (
 	"context"
 	"net/http"
-	"pg-sh-scripts/internal/api/v1/bash"
 	"pg-sh-scripts/internal/common"
 	"pg-sh-scripts/internal/config"
+	"pg-sh-scripts/internal/service"
 	"pg-sh-scripts/pkg/logging"
 
 	uuid "github.com/satori/go.uuid"
@@ -14,12 +14,12 @@ import (
 )
 
 type (
-	IUseCase interface {
+	IBashLogUseCase interface {
 		GetBashLogListByBashId(ctx *gin.Context)
 	}
 
-	UseCase struct {
-		service    IService
+	BashLogUseCase struct {
+		service    service.IBashLogService
 		logger     *logging.Logger
 		httpErrors *config.HTTPErrors
 	}
@@ -30,18 +30,18 @@ type (
 // @Tags Bash Log
 // @Description Get list of bash logs by bash id
 // @Produce json
-// @Success 200 {array} BashLog
+// @Success 200 {array} model.BashLog
 // @Failure 500 {object} schema.HTTPError
 // @Param bashId path string true "ID of bash script"
 // @Router /bash/log/{bashId}/list [get]
-func (u *UseCase) GetBashLogListByBashId(ctx *gin.Context) {
+func (u *BashLogUseCase) GetBashLogListByBashId(ctx *gin.Context) {
 	bashId, err := uuid.FromString(ctx.Param("bashId"))
 	if err != nil {
 		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
 		return
 	}
 
-	bashService := bash.GetService()
+	bashService := service.GetBashService()
 	_, err = bashService.GetOneById(context.Background(), bashId)
 	if err != nil {
 		ctx.JSON(u.httpErrors.BashGet.HTTPCode, u.httpErrors.BashGet)
@@ -57,9 +57,9 @@ func (u *UseCase) GetBashLogListByBashId(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, bashLogList)
 }
 
-func GetUseCase() IUseCase {
-	return &UseCase{
-		service:    GetService(),
+func GetBashLogUseCase() IBashLogUseCase {
+	return &BashLogUseCase{
+		service:    service.GetBashLogService(),
 		logger:     common.GetLogger(),
 		httpErrors: config.GetHTTPErrors(),
 	}

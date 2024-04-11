@@ -35,7 +35,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/bash.Bash"
+                            "$ref": "#/definitions/model.Bash"
                         }
                     },
                     "500": {
@@ -74,7 +74,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/bash.ExecBashDTO"
+                            "$ref": "#/definitions/dto.ExecBashDTO"
                         }
                     }
                 ],
@@ -123,7 +123,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/bash.ExecBashDTO"
+                                "$ref": "#/definitions/dto.ExecBashDTO"
                             }
                         }
                     }
@@ -160,7 +160,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/bash.Bash"
+                                "$ref": "#/definitions/model.Bash"
                             }
                         }
                     },
@@ -198,7 +198,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/bashlog.BashLog"
+                                "$ref": "#/definitions/model.BashLog"
                             }
                         }
                     },
@@ -234,7 +234,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/bash.Bash"
+                            "$ref": "#/definitions/model.Bash"
                         }
                     },
                     "500": {
@@ -283,7 +283,18 @@
         }
     },
     "definitions": {
-        "bash.Bash": {
+        "dto.ExecBashDTO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "timeoutSeconds": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Bash": {
             "type": "object",
             "properties": {
                 "body": {
@@ -300,18 +311,7 @@
                 }
             }
         },
-        "bash.ExecBashDTO": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "timeoutSeconds": {
-                    "type": "integer"
-                }
-            }
-        },
-        "bashlog.BashLog": {
+        "model.BashLog": {
             "type": "object",
             "properties": {
                 "bashId": {

@@ -1,4 +1,4 @@
-package bash
+package model
 
 import (
 	"time"

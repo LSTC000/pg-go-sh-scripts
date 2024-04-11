@@ -1,4 +1,4 @@
-package bashlog
+package model
 
 import (
 	"time"

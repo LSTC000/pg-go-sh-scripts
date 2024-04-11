@@ -1,13 +1,14 @@
-package bash
+package v1
 
 import (
 	"pg-sh-scripts/internal/api"
+	"pg-sh-scripts/internal/usecase"
 
 	"github.com/gin-gonic/gin"
 )
 
 const (
-	groupPath           = "/bash"
+	groupBashPath       = "/bash"
 	getBashByIdPath     = "/:id"
 	getBashFileByIdPath = "/:id/file"
 	getBashListPath     = "/list"
@@ -16,11 +17,11 @@ const (
 	execBashListPath    = "/execute/list"
 )
 
-type Handler struct{}
+type BashHandler struct{}
 
-func (h *Handler) Register(rg *gin.RouterGroup) {
-	useCase := GetUseCase()
-	group := rg.Group(groupPath)
+func (h *BashHandler) Register(rg *gin.RouterGroup) {
+	useCase := usecase.GeBashUseCase()
+	group := rg.Group(groupBashPath)
 	{
 		group.GET(getBashByIdPath, useCase.GetBashById)
 		group.GET(getBashFileByIdPath, useCase.GetBashFileById)
@@ -31,6 +32,6 @@ func (h *Handler) Register(rg *gin.RouterGroup) {
 	}
 }
 
-func GetHandler() api.IHandler {
-	return &Handler{}
+func GetBashHandler() api.IHandler {
+	return &BashHandler{}
 }
