@@ -8,7 +8,7 @@ import (
 
 type BashLog struct {
 	ID        uuid.UUID `json:"id" swaggertype:"primitive,string"`
-	BashID    uuid.UUID `json:"bashID" swaggertype:"primitive,string"`
+	BashID    uuid.UUID `json:"bashId" swaggertype:"primitive,string"`
 	Body      string    `json:"body"`
 	CreatedAt time.Time `json:"createdAt"`
 }
