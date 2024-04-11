@@ -29,7 +29,7 @@ definitions:
       id:
         type: string
     type: object
-  model.HTTPError:
+  schema.HTTPError:
     properties:
       detail:
         type: string
@@ -38,7 +38,7 @@ definitions:
       serviceCode:
         type: integer
     type: object
-  model.Message:
+  schema.Message:
     properties:
       message:
         type: string
@@ -71,7 +71,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/schema.HTTPError'
       summary: Create
       tags:
       - Bash
@@ -94,7 +94,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/schema.HTTPError'
       summary: Get by id
       tags:
       - Bash
@@ -117,7 +117,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/schema.HTTPError'
       summary: Get file by id
       tags:
       - Bash
@@ -133,7 +133,7 @@ paths:
         name: isSync
         required: true
         type: boolean
-      - description: Execute bash script model
+      - description: Execute bash script schema
         in: body
         name: execute
         required: true
@@ -145,11 +145,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Message'
+            $ref: '#/definitions/schema.Message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/schema.HTTPError'
       summary: Execute
       tags:
       - Bash
@@ -179,11 +179,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Message'
+            $ref: '#/definitions/schema.Message'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/schema.HTTPError'
       summary: Execute list
       tags:
       - Bash
@@ -202,7 +202,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/schema.HTTPError'
       summary: Get list
       tags:
       - Bash
@@ -227,7 +227,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/schema.HTTPError'
       summary: Get list by bash id
       tags:
       - Bash Log

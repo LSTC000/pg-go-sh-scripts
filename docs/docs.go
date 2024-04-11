@@ -47,7 +47,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/schema.HTTPError"
                         }
                     }
                 }
@@ -75,7 +75,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Execute bash script model",
+                        "description": "Execute bash script schema",
                         "name": "execute",
                         "in": "body",
                         "required": true,
@@ -88,13 +88,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Message"
+                            "$ref": "#/definitions/schema.Message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/schema.HTTPError"
                         }
                     }
                 }
@@ -138,13 +138,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Message"
+                            "$ref": "#/definitions/schema.Message"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/schema.HTTPError"
                         }
                     }
                 }
@@ -173,7 +173,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/schema.HTTPError"
                         }
                     }
                 }
@@ -211,7 +211,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/schema.HTTPError"
                         }
                     }
                 }
@@ -246,7 +246,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/schema.HTTPError"
                         }
                     }
                 }
@@ -281,7 +281,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/schema.HTTPError"
                         }
                     }
                 }
@@ -334,7 +334,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.HTTPError": {
+        "schema.HTTPError": {
             "type": "object",
             "properties": {
                 "detail": {
@@ -348,7 +348,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Message": {
+        "schema.Message": {
             "type": "object",
             "properties": {
                 "message": {

@@ -19,8 +19,9 @@ type (
 	}
 
 	UseCase struct {
-		service IService
-		logger  *logging.Logger
+		service    IService
+		logger     *logging.Logger
+		httpErrors *config.HTTPErrors
 	}
 )
 
@@ -30,28 +31,26 @@ type (
 // @Description Get list of bash logs by bash id
 // @Produce json
 // @Success 200 {array} BashLog
-// @Failure 500 {object} model.HTTPError
+// @Failure 500 {object} schema.HTTPError
 // @Param bashId path string true "ID of bash script"
 // @Router /bash/log/{bashId}/list [get]
 func (u *UseCase) GetBashLogListByBashId(ctx *gin.Context) {
-	httpErrors := config.GetHTTPErrors()
-
 	bashId, err := uuid.FromString(ctx.Param("bashId"))
 	if err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, httpErrors.Validate)
+		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
 		return
 	}
 
 	bashService := bash.GetService()
 	_, err = bashService.GetOneById(context.Background(), bashId)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashGet)
+		ctx.JSON(u.httpErrors.BashGet.HTTPCode, u.httpErrors.BashGet)
 		return
 	}
 
 	bashLogList, err := u.service.GetAllByBashId(context.Background(), bashId)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashLogGetListByBashId)
+		ctx.JSON(u.httpErrors.BashLogGetListByBashId.HTTPCode, u.httpErrors.BashLogGetListByBashId)
 		return
 	}
 
@@ -60,7 +59,8 @@ func (u *UseCase) GetBashLogListByBashId(ctx *gin.Context) {
 
 func GetUseCase() IUseCase {
 	return &UseCase{
-		service: GetService(),
-		logger:  common.GetLogger(),
+		service:    GetService(),
+		logger:     common.GetLogger(),
+		httpErrors: config.GetHTTPErrors(),
 	}
 }

@@ -7,7 +7,7 @@ import (
 	"os"
 	"pg-sh-scripts/internal/common"
 	"pg-sh-scripts/internal/config"
-	"pg-sh-scripts/internal/model"
+	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/pkg/gosha"
 	"pg-sh-scripts/pkg/logging"
 	"time"
@@ -28,8 +28,9 @@ type (
 	}
 
 	UseCase struct {
-		service IService
-		logger  *logging.Logger
+		service    IService
+		logger     *logging.Logger
+		httpErrors *config.HTTPErrors
 	}
 )
 
@@ -39,21 +40,19 @@ type (
 // @Description Get bash script by id
 // @Produce json
 // @Success 200 {object} Bash
-// @Failure 500 {object} model.HTTPError
+// @Failure 500 {object} schema.HTTPError
 // @Param id path string true "ID of bash script"
 // @Router /bash/{id} [get]
 func (u *UseCase) GetBashById(ctx *gin.Context) {
-	httpErrors := config.GetHTTPErrors()
-
 	bashId, err := uuid.FromString(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, httpErrors.Validate)
+		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
 		return
 	}
 
 	bash, err := u.service.GetOneById(context.Background(), bashId)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashGet)
+		ctx.JSON(u.httpErrors.BashGet.HTTPCode, u.httpErrors.BashGet)
 		return
 	}
 
@@ -66,27 +65,25 @@ func (u *UseCase) GetBashById(ctx *gin.Context) {
 // @Description Get bash script file by id
 // @Produce x-www-form-urlencoded
 // @Success 200 {file} binary
-// @Failure 500 {object} model.HTTPError
+// @Failure 500 {object} schema.HTTPError
 // @Param id path string true "ID of bash script"
 // @Router /bash/{id}/file [get]
 func (u *UseCase) GetBashFileById(ctx *gin.Context) {
-	httpErrors := config.GetHTTPErrors()
-
 	bashId, err := uuid.FromString(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, httpErrors.Validate)
+		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
 		return
 	}
 
 	bash, err := u.service.GetOneById(context.Background(), bashId)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashGet)
+		ctx.JSON(u.httpErrors.BashGet.HTTPCode, u.httpErrors.BashGet)
 		return
 	}
 
 	fileBuffer, err := GetBashFileBuffer(bash.Title, bash.Body)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashGetFile)
+		ctx.JSON(u.httpErrors.BashGetFile.HTTPCode, u.httpErrors.BashGetFile)
 		return
 	}
 
@@ -100,14 +97,12 @@ func (u *UseCase) GetBashFileById(ctx *gin.Context) {
 // @Description Get list of bash scripts
 // @Produce json
 // @Success 200 {array} Bash
-// @Failure 500 {object} model.HTTPError
+// @Failure 500 {object} schema.HTTPError
 // @Router /bash/list [get]
 func (u *UseCase) GetBashList(ctx *gin.Context) {
-	httpErrors := config.GetHTTPErrors()
-
 	bashList, err := u.service.GetAll(context.Background())
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashGetList)
+		ctx.JSON(u.httpErrors.BashGetList.HTTPCode, u.httpErrors.BashGetList)
 		return
 	}
 
@@ -121,15 +116,13 @@ func (u *UseCase) GetBashList(ctx *gin.Context) {
 // @Accept mpfd
 // @Produce json
 // @Success 200 {object} Bash
-// @Failure 500 {object} model.HTTPError
+// @Failure 500 {object} schema.HTTPError
 // @Param file formData file true "Bash script file"
 // @Router /bash [post]
 func (u *UseCase) CreateBash(ctx *gin.Context) {
-	httpErrors := config.GetHTTPErrors()
-
 	file, err := ctx.FormFile("file")
 	if err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, httpErrors.Validate)
+		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
 		return
 	}
 
@@ -137,21 +130,21 @@ func (u *UseCase) CreateBash(ctx *gin.Context) {
 	fileExtension := GetBashFileExtension(fileName)
 
 	if err := ValidateBashFileExtension(fileExtension); err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashFileExtension)
+		ctx.JSON(u.httpErrors.BashFileExtension.HTTPCode, u.httpErrors.BashFileExtension)
 		return
 	}
 
 	fileTitle := GetBashFileTitle(fileName)
 	fileBody, err := GetBashFileBody(file)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashFileBody)
+		ctx.JSON(u.httpErrors.BashFileBody.HTTPCode, u.httpErrors.BashFileBody)
 		return
 	}
 
 	createBash := CreateBashDTO{Title: fileTitle, Body: fileBody}
 	bash, err := u.service.CreateBash(context.Background(), createBash)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashCreate)
+		ctx.JSON(u.httpErrors.BashCreate.HTTPCode, u.httpErrors.BashCreate)
 		return
 	}
 
@@ -164,36 +157,33 @@ func (u *UseCase) CreateBash(ctx *gin.Context) {
 // @Description Execute bash script
 // @Accept json
 // @Produce json
-// @Success 200 {object} model.Message
-// @Failure 500 {object} model.HTTPError
+// @Success 200 {object} schema.Message
+// @Failure 500 {object} schema.HTTPError
 // @Param isSync query bool true "Execute type: if true, then in a multithreading, otherwise in a single thread"
-// @Param execute body ExecBashDTO true "Execute bash script model"
+// @Param execute body ExecBashDTO true "Execute bash script schema"
 // @Router /bash/execute [post]
 func (u *UseCase) ExecBash(ctx *gin.Context) {
 	execBash := ExecBashDTO{}
-	httpErrors := config.GetHTTPErrors()
 
 	isSync := ctx.GetBool("isSync")
 	if err := ctx.ShouldBindJSON(&execBash); err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, httpErrors.Validate)
+		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
 		return
 	}
 
 	bash, err := u.service.GetOneById(context.Background(), execBash.Id)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashGet)
+		ctx.JSON(u.httpErrors.BashGet.HTTPCode, u.httpErrors.BashGet)
 		return
 	}
 
 	tmpFile, err := gosha.GetTmpFile(bash.Body)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, httpErrors.BashExecute)
+		ctx.JSON(u.httpErrors.BashExecute.HTTPCode, u.httpErrors.BashExecute)
 		return
 	}
 	defer func() {
-		if err := gosha.RemoveTmpFile(tmpFile); err != nil {
-			ctx.JSON(http.StatusBadRequest, httpErrors.BashExecute)
-		}
+		_ = gosha.RemoveTmpFile(tmpFile)
 	}()
 
 	commands := []gosha.Cmd{
@@ -205,7 +195,7 @@ func (u *UseCase) ExecBash(ctx *gin.Context) {
 	}
 
 	goshaExec := common.GetGoshaExec(commands)
-	message := model.Message{Message: "ok"}
+	message := schema.Message{Message: "ok"}
 
 	if isSync {
 		if errs := goshaExec.SyncRun(); errs != nil {
@@ -226,18 +216,17 @@ func (u *UseCase) ExecBash(ctx *gin.Context) {
 // @Description Execute list of bash scripts
 // @Accept json
 // @Produce json
-// @Success 200 {object} model.Message
-// @Failure 500 {object} model.HTTPError
+// @Success 200 {object} schema.Message
+// @Failure 500 {object} schema.HTTPError
 // @Param isSync query bool true "Execute type: if true, then in a multithreading, otherwise in a single thread"
 // @Param execute body []ExecBashDTO true "List of execute bash script models"
 // @Router /bash/execute/list [post]
 func (u *UseCase) ExecBashList(ctx *gin.Context) {
 	execBashList := make([]ExecBashDTO, 0)
-	httpErrors := config.GetHTTPErrors()
 
 	isSync := ctx.GetBool("isSync")
 	if err := ctx.ShouldBindJSON(&execBashList); err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, httpErrors.Validate)
+		ctx.JSON(u.httpErrors.Validate.HTTPCode, u.httpErrors.Validate)
 		return
 	}
 
@@ -246,7 +235,7 @@ func (u *UseCase) ExecBashList(ctx *gin.Context) {
 	for _, execBash := range execBashList {
 		bash, err := u.service.GetOneById(context.Background(), execBash.Id)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, httpErrors.BashGet)
+			ctx.JSON(u.httpErrors.BashGet.HTTPCode, u.httpErrors.BashGet)
 			return
 		}
 		bashList = append(bashList, bash)
@@ -260,7 +249,7 @@ func (u *UseCase) ExecBashList(ctx *gin.Context) {
 
 		tmpFile, err := gosha.GetTmpFile(bash.Body)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, httpErrors.BashExecute)
+			ctx.JSON(u.httpErrors.BashExecute.HTTPCode, u.httpErrors.BashExecute)
 			return
 		}
 		tmpFiles = append(tmpFiles, tmpFile)
@@ -274,14 +263,12 @@ func (u *UseCase) ExecBashList(ctx *gin.Context) {
 	}
 	defer func() {
 		for _, tmpFile := range tmpFiles {
-			if err := gosha.RemoveTmpFile(tmpFile); err != nil {
-				ctx.JSON(http.StatusBadRequest, httpErrors.BashExecute)
-			}
+			_ = gosha.RemoveTmpFile(tmpFile)
 		}
 	}()
 
 	goshaExec := common.GetGoshaExec(commands)
-	message := model.Message{Message: "ok"}
+	message := schema.Message{Message: "ok"}
 
 	if isSync {
 		if errs := goshaExec.SyncRun(); errs != nil {
@@ -298,7 +285,8 @@ func (u *UseCase) ExecBashList(ctx *gin.Context) {
 
 func GetUseCase() IUseCase {
 	return &UseCase{
-		service: GetService(),
-		logger:  common.GetLogger(),
+		service:    GetService(),
+		logger:     common.GetLogger(),
+		httpErrors: config.GetHTTPErrors(),
 	}
 }

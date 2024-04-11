@@ -1,89 +1,90 @@
 package config
 
 import (
-	"pg-sh-scripts/internal/model"
+	"net/http"
+	"pg-sh-scripts/internal/schema"
 	"sync"
 )
 
 type HTTPErrors struct {
 	// Base Errors
-	Internal model.HTTPError
-	Validate model.HTTPError
+	Internal schema.HTTPError
+	Validate schema.HTTPError
 	// Bash Errors
-	BashFileExtension model.HTTPError
-	BashFileBody      model.HTTPError
-	BashCreate        model.HTTPError
-	BashGet           model.HTTPError
-	BashGetFile       model.HTTPError
-	BashGetFilePath   model.HTTPError
-	BashGetList       model.HTTPError
-	BashExecute       model.HTTPError
-	BashExecuteList   model.HTTPError
+	BashFileExtension schema.HTTPError
+	BashFileBody      schema.HTTPError
+	BashCreate        schema.HTTPError
+	BashGet           schema.HTTPError
+	BashGetFile       schema.HTTPError
+	BashGetFilePath   schema.HTTPError
+	BashGetList       schema.HTTPError
+	BashExecute       schema.HTTPError
+	BashExecuteList   schema.HTTPError
 	// Bash Log Errors
-	BashLogGetListByBashId model.HTTPError
+	BashLogGetListByBashId schema.HTTPError
 }
 
 func setHTTPErrors(errors *HTTPErrors) {
 	// Base Errors
-	errors.Internal = model.HTTPError{
-		HTTPCode:    500,
+	errors.Internal = schema.HTTPError{
+		HTTPCode:    http.StatusInternalServerError,
 		ServiceCode: 0,
 		Detail:      "Internal Error",
 	}
-	errors.Validate = model.HTTPError{
-		HTTPCode:    422,
+	errors.Validate = schema.HTTPError{
+		HTTPCode:    http.StatusUnprocessableEntity,
 		ServiceCode: 1,
 		Detail:      "Validation Error",
 	}
 	// Bash Errors
-	errors.BashFileExtension = model.HTTPError{
-		HTTPCode:    400,
+	errors.BashFileExtension = schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 100,
 		Detail:      "Invalid Bash File Extension",
 	}
-	errors.BashFileBody = model.HTTPError{
-		HTTPCode:    400,
+	errors.BashFileBody = schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 101,
 		Detail:      "Invalid Bash File Body",
 	}
-	errors.BashCreate = model.HTTPError{
-		HTTPCode:    400,
+	errors.BashCreate = schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 102,
 		Detail:      "Creating Bash Error",
 	}
-	errors.BashGet = model.HTTPError{
-		HTTPCode:    400,
+	errors.BashGet = schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 103,
 		Detail:      "Getting Bash Error",
 	}
-	errors.BashGetFile = model.HTTPError{
-		HTTPCode:    400,
+	errors.BashGetFile = schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 104,
 		Detail:      "Getting Bash File Error",
 	}
-	errors.BashGetFilePath = model.HTTPError{
-		HTTPCode:    400,
+	errors.BashGetFilePath = schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 105,
 		Detail:      "Getting Bash File Path Error",
 	}
-	errors.BashGetList = model.HTTPError{
-		HTTPCode:    400,
+	errors.BashGetList = schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 106,
 		Detail:      "Getting Bash List Error",
 	}
-	errors.BashExecute = model.HTTPError{
-		HTTPCode:    400,
+	errors.BashExecute = schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 107,
 		Detail:      "Executing Bash Error",
 	}
-	errors.BashExecuteList = model.HTTPError{
-		HTTPCode:    400,
+	errors.BashExecuteList = schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 108,
 		Detail:      "Executing Bash List Error",
 	}
 	// Bash Log Errors
-	errors.BashLogGetListByBashId = model.HTTPError{
-		HTTPCode:    400,
+	errors.BashLogGetListByBashId = schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 108,
 		Detail:      "Getting Bash Log List By Bash Id Error",
 	}

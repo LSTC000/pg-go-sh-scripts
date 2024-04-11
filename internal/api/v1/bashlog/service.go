@@ -11,6 +11,7 @@ import (
 type (
 	IService interface {
 		GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*BashLog, error)
+		Create(ctx context.Context, createBashLog CreateBashLogDTO) (*BashLog, error)
 	}
 
 	Service struct {
@@ -25,6 +26,14 @@ func (s *Service) GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*Bash
 		return nil, err
 	}
 	return bashLogList, nil
+}
+
+func (s *Service) Create(ctx context.Context, createBashLog CreateBashLogDTO) (*BashLog, error) {
+	bashLog, err := s.repository.Create(ctx, createBashLog)
+	if err != nil {
+		return nil, err
+	}
+	return bashLog, nil
 }
 
 func GetService() IService {
