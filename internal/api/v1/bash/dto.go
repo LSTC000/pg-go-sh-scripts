@@ -13,7 +13,7 @@ type (
 	}
 
 	ExecBashDTO struct {
-		ID             uuid.UUID     `json:"id" swaggertype:"primitive,string"`
+		Id             uuid.UUID     `json:"id" swaggertype:"primitive,string"`
 		TimeoutSeconds time.Duration `json:"timeoutSeconds" swaggertype:"primitive,integer"`
 	}
 )

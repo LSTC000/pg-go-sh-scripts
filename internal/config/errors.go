@@ -20,7 +20,7 @@ type HTTPErrors struct {
 	BashExecute       model.HTTPError
 	BashExecuteList   model.HTTPError
 	// Bash Log Errors
-	BashLogGetListByBashID model.HTTPError
+	BashLogGetListByBashId model.HTTPError
 }
 
 func setHTTPErrors(errors *HTTPErrors) {
@@ -82,7 +82,7 @@ func setHTTPErrors(errors *HTTPErrors) {
 		Detail:      "Executing Bash List Error",
 	}
 	// Bash Log Errors
-	errors.BashLogGetListByBashID = model.HTTPError{
+	errors.BashLogGetListByBashId = model.HTTPError{
 		HTTPCode:    400,
 		ServiceCode: 108,
 		Detail:      "Getting Bash Log List By Bash Id Error",

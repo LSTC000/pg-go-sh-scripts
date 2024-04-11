@@ -7,7 +7,7 @@ import (
 )
 
 type Bash struct {
-	ID        uuid.UUID `json:"id" swaggertype:"primitive,string"`
+	Id        uuid.UUID `json:"id" swaggertype:"primitive,string"`
 	Title     string    `json:"title"`
 	Body      string    `json:"body"`
 	CreatedAt time.Time `json:"createdAt"`

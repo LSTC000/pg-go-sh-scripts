@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	uuid "github.com/satori/go.uuid"
 	"pg-sh-scripts/internal/common"
 	"pg-sh-scripts/pkg/logging"
+
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,10 +18,10 @@ type PgRepository struct {
 	logger *logging.Logger
 }
 
-func (p PgRepository) GetAllByBashID(ctx context.Context, bashID uuid.UUID) ([]*BashLog, error) {
+func (p PgRepository) GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*BashLog, error) {
 	bashLogList := make([]*BashLog, 0)
 
-	p.logger.Debug(fmt.Sprintf("Start getting bash log list by bash id: %v", bashID))
+	p.logger.Debug(fmt.Sprintf("Start getting bash log list by bash id: %v", bashId))
 	q := `
 		SELECT
 			id, bash_id, body, created_at
@@ -30,7 +31,7 @@ func (p PgRepository) GetAllByBashID(ctx context.Context, bashID uuid.UUID) ([]*
 		    bash_id = $1
 	`
 
-	rows, err := p.db.Query(ctx, q, bashID)
+	rows, err := p.db.Query(ctx, q, bashId)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -41,7 +42,7 @@ func (p PgRepository) GetAllByBashID(ctx context.Context, bashID uuid.UUID) ([]*
 
 	for rows.Next() {
 		bashLog := BashLog{}
-		if err := rows.Scan(&bashLog.ID, &bashLog.BashID, &bashLog.Body, &bashLog.CreatedAt); err != nil {
+		if err := rows.Scan(&bashLog.Id, &bashLog.BashId, &bashLog.Body, &bashLog.CreatedAt); err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
 				p.logger.Error(fmt.Sprintf("Getting bash log Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
@@ -50,7 +51,7 @@ func (p PgRepository) GetAllByBashID(ctx context.Context, bashID uuid.UUID) ([]*
 		}
 		bashLogList = append(bashLogList, &bashLog)
 	}
-	p.logger.Debug(fmt.Sprintf("Finish getting bash log list by bash id: %v", bashID))
+	p.logger.Debug(fmt.Sprintf("Finish getting bash log list by bash id: %v", bashId))
 
 	return bashLogList, nil
 }
@@ -58,7 +59,7 @@ func (p PgRepository) GetAllByBashID(ctx context.Context, bashID uuid.UUID) ([]*
 func (p PgRepository) Create(ctx context.Context, createBashLog CreateBashLogDTO) (*BashLog, error) {
 	bashLog := BashLog{}
 
-	p.logger.Debug(fmt.Sprintf("Start creating bash log for bash with id: %v", createBashLog.BashID))
+	p.logger.Debug(fmt.Sprintf("Start creating bash log for bash with id: %v", createBashLog.BashId))
 	stmt := `
 		INSERT INTO scripts.bash_log
 			(bash_id, body)
@@ -67,15 +68,15 @@ func (p PgRepository) Create(ctx context.Context, createBashLog CreateBashLogDTO
 		RETURNING id, bash_id, body, created_at
 	`
 
-	row := p.db.QueryRow(ctx, stmt, createBashLog.BashID, createBashLog.Body)
-	if err := row.Scan(&bashLog.ID, &bashLog.BashID, &bashLog.Body, &bashLog.CreatedAt); err != nil {
+	row := p.db.QueryRow(ctx, stmt, createBashLog.BashId, createBashLog.Body)
+	if err := row.Scan(&bashLog.Id, &bashLog.BashId, &bashLog.Body, &bashLog.CreatedAt); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			p.logger.Error(fmt.Sprintf("Creating bash log Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
 		}
 		return nil, err
 	}
-	p.logger.Debug(fmt.Sprintf("Finish creating bash log for bash with id: %v", createBashLog.BashID))
+	p.logger.Debug(fmt.Sprintf("Finish creating bash log for bash with id: %v", createBashLog.BashId))
 
 	return &bashLog, nil
 }

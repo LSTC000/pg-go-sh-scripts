@@ -10,7 +10,7 @@ import (
 
 type (
 	IService interface {
-		GetOneByID(ctx context.Context, id uuid.UUID) (*Bash, error)
+		GetOneById(ctx context.Context, id uuid.UUID) (*Bash, error)
 		GetAll(ctx context.Context) ([]*Bash, error)
 		CreateBash(ctx context.Context, createBash CreateBashDTO) (*Bash, error)
 	}
@@ -21,8 +21,8 @@ type (
 	}
 )
 
-func (s *Service) GetOneByID(ctx context.Context, id uuid.UUID) (*Bash, error) {
-	bash, err := s.repository.GetOneByID(ctx, id)
+func (s *Service) GetOneById(ctx context.Context, id uuid.UUID) (*Bash, error) {
+	bash, err := s.repository.GetOneById(ctx, id)
 	if err != nil {
 		return nil, err
 	}

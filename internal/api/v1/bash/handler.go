@@ -8,8 +8,8 @@ import (
 
 const (
 	groupPath           = "/bash"
-	getBashByIDPath     = "/:id"
-	getBashFileByIDPath = "/:id/file"
+	getBashByIdPath     = "/:id"
+	getBashFileByIdPath = "/:id/file"
 	getBashListPath     = "/list"
 	createBashPath      = ""
 	execBashPath        = "/execute"
@@ -22,8 +22,8 @@ func (h *Handler) Register(rg *gin.RouterGroup) {
 	useCase := GetUseCase()
 	group := rg.Group(groupPath)
 	{
-		group.GET(getBashByIDPath, useCase.GetBashByID)
-		group.GET(getBashFileByIDPath, useCase.GetBashFileByID)
+		group.GET(getBashByIdPath, useCase.GetBashById)
+		group.GET(getBashFileByIdPath, useCase.GetBashFileById)
 		group.GET(getBashListPath, useCase.GetBashList)
 		group.POST(createBashPath, useCase.CreateBash)
 		group.POST(execBashPath, useCase.ExecBash)

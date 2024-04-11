@@ -17,7 +17,7 @@ type PgRepository struct {
 	logger *logging.Logger
 }
 
-func (p PgRepository) GetOneByID(ctx context.Context, id uuid.UUID) (*Bash, error) {
+func (p PgRepository) GetOneById(ctx context.Context, id uuid.UUID) (*Bash, error) {
 	bash := Bash{}
 
 	p.logger.Debug(fmt.Sprintf("Start getting bash by id: %s", id))
@@ -31,7 +31,7 @@ func (p PgRepository) GetOneByID(ctx context.Context, id uuid.UUID) (*Bash, erro
 	`
 
 	row := p.db.QueryRow(ctx, q, id)
-	if err := row.Scan(&bash.ID, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
+	if err := row.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			p.logger.Error(fmt.Sprintf("Getting bash Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
@@ -65,7 +65,7 @@ func (p PgRepository) GetAll(ctx context.Context) ([]*Bash, error) {
 
 	for rows.Next() {
 		bash := Bash{}
-		if err := rows.Scan(&bash.ID, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
+		if err := rows.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
 				p.logger.Error(fmt.Sprintf("Getting bash Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
@@ -92,7 +92,7 @@ func (p PgRepository) Create(ctx context.Context, createBash CreateBashDTO) (*Ba
 	`
 
 	row := p.db.QueryRow(ctx, stmt, createBash.Title, createBash.Body)
-	if err := row.Scan(&bash.ID, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
+	if err := row.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			p.logger.Error(fmt.Sprintf("Creating bash Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))

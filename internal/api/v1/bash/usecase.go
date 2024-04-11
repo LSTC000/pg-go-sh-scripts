@@ -19,8 +19,8 @@ import (
 
 type (
 	IUseCase interface {
-		GetBashByID(ctx *gin.Context)
-		GetBashFileByID(ctx *gin.Context)
+		GetBashById(ctx *gin.Context)
+		GetBashFileById(ctx *gin.Context)
 		GetBashList(ctx *gin.Context)
 		CreateBash(ctx *gin.Context)
 		ExecBash(ctx *gin.Context)
@@ -33,7 +33,7 @@ type (
 	}
 )
 
-// GetBashByID
+// GetBashById
 // @Summary Get by id
 // @Tags Bash
 // @Description Get bash script by id
@@ -42,16 +42,16 @@ type (
 // @Failure 500 {object} model.HTTPError
 // @Param id path string true "ID of bash script"
 // @Router /bash/{id} [get]
-func (u *UseCase) GetBashByID(ctx *gin.Context) {
+func (u *UseCase) GetBashById(ctx *gin.Context) {
 	httpErrors := config.GetHTTPErrors()
 
-	bashID, err := uuid.FromString(ctx.Param("id"))
+	bashId, err := uuid.FromString(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, httpErrors.Validate)
 		return
 	}
 
-	bash, err := u.service.GetOneByID(context.Background(), bashID)
+	bash, err := u.service.GetOneById(context.Background(), bashId)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpErrors.BashGet)
 		return
@@ -60,7 +60,7 @@ func (u *UseCase) GetBashByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, bash)
 }
 
-// GetBashFileByID
+// GetBashFileById
 // @Summary Get file by id
 // @Tags Bash
 // @Description Get bash script file by id
@@ -69,16 +69,16 @@ func (u *UseCase) GetBashByID(ctx *gin.Context) {
 // @Failure 500 {object} model.HTTPError
 // @Param id path string true "ID of bash script"
 // @Router /bash/{id}/file [get]
-func (u *UseCase) GetBashFileByID(ctx *gin.Context) {
+func (u *UseCase) GetBashFileById(ctx *gin.Context) {
 	httpErrors := config.GetHTTPErrors()
 
-	bashID, err := uuid.FromString(ctx.Param("id"))
+	bashId, err := uuid.FromString(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, httpErrors.Validate)
 		return
 	}
 
-	bash, err := u.service.GetOneByID(context.Background(), bashID)
+	bash, err := u.service.GetOneById(context.Background(), bashId)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpErrors.BashGet)
 		return
@@ -179,7 +179,7 @@ func (u *UseCase) ExecBash(ctx *gin.Context) {
 		return
 	}
 
-	bash, err := u.service.GetOneByID(context.Background(), execBash.ID)
+	bash, err := u.service.GetOneById(context.Background(), execBash.Id)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpErrors.BashGet)
 		return
@@ -198,7 +198,7 @@ func (u *UseCase) ExecBash(ctx *gin.Context) {
 
 	commands := []gosha.Cmd{
 		{
-			Title:   bash.ID.String(),
+			Title:   bash.Id.String(),
 			Path:    tmpFile.Name(),
 			Timeout: execBash.TimeoutSeconds * time.Second,
 		},
@@ -244,7 +244,7 @@ func (u *UseCase) ExecBashList(ctx *gin.Context) {
 	execBashCount := len(execBashList)
 	bashList := make([]*Bash, 0, execBashCount)
 	for _, execBash := range execBashList {
-		bash, err := u.service.GetOneByID(context.Background(), execBash.ID)
+		bash, err := u.service.GetOneById(context.Background(), execBash.Id)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, httpErrors.BashGet)
 			return
@@ -266,7 +266,7 @@ func (u *UseCase) ExecBashList(ctx *gin.Context) {
 		tmpFiles = append(tmpFiles, tmpFile)
 
 		cmd := gosha.Cmd{
-			Title:   bash.ID.String(),
+			Title:   bash.Id.String(),
 			Path:    tmpFile.Name(),
 			Timeout: execBash.TimeoutSeconds * time.Second,
 		}

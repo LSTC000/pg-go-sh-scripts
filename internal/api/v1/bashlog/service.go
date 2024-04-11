@@ -10,7 +10,7 @@ import (
 
 type (
 	IService interface {
-		GetAllByBashID(ctx context.Context, bashID uuid.UUID) ([]*BashLog, error)
+		GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*BashLog, error)
 	}
 
 	Service struct {
@@ -19,8 +19,8 @@ type (
 	}
 )
 
-func (s *Service) GetAllByBashID(ctx context.Context, bashID uuid.UUID) ([]*BashLog, error) {
-	bashLogList, err := s.repository.GetAllByBashID(ctx, bashID)
+func (s *Service) GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*BashLog, error) {
+	bashLogList, err := s.repository.GetAllByBashId(ctx, bashId)
 	if err != nil {
 		return nil, err
 	}
