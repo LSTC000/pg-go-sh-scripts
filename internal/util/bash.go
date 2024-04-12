@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"path/filepath"
-	"pg-sh-scripts/internal/common"
+	"pg-sh-scripts/internal/log"
 	"strings"
 )
 
@@ -37,7 +37,7 @@ func GetBashFileBody(file *multipart.FileHeader) (string, error) {
 	defer func(f multipart.File) {
 		err := f.Close()
 		if err != nil {
-			logger := common.GetLogger()
+			logger := log.GetLogger()
 			logger.Error(fmt.Sprintf("Close file %s error: %v", file.Filename, err))
 		}
 	}(f)

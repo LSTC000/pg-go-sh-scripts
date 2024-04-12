@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"pg-sh-scripts/internal/common"
 	"pg-sh-scripts/internal/dto"
+	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/internal/repo"
 	"pg-sh-scripts/pkg/logging"
@@ -51,6 +51,6 @@ func (s *BashService) CreateBash(ctx context.Context, dto dto.CreateBashDTO) (*m
 func GetBashService() IBashService {
 	return &BashService{
 		repository: repo.GetPgBashRepository(),
-		logger:     common.GetLogger(),
+		logger:     log.GetLogger(),
 	}
 }

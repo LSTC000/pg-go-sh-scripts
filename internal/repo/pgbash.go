@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"pg-sh-scripts/internal/common"
+	"pg-sh-scripts/internal/db"
 	"pg-sh-scripts/internal/dto"
+	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/pkg/logging"
 
@@ -107,8 +108,8 @@ func (p PgBashRepository) Create(ctx context.Context, dto dto.CreateBashDTO) (*m
 }
 
 func GetPgBashRepository() IBashRepository {
-	logger := common.GetLogger()
-	pg, err := common.GetPgClient()
+	logger := log.GetLogger()
+	pg, err := db.GetPgClient()
 	if err != nil {
 		logger.Error(fmt.Sprintf("Getting postgres client Error: %s", err))
 		panic(err)

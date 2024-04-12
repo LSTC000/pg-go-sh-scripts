@@ -3,6 +3,7 @@ package usecase
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"pg-sh-scripts/internal/common"
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/dto"
+	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/service"
@@ -55,8 +57,9 @@ func (s *PgScanner) Scan(stdout io.ReadCloser, cmd gosha.Cmd) error {
 		}
 
 		createBashLogDTO := dto.CreateBashLogDTO{
-			BashId: bashId,
-			Body:   msg,
+			BashId:  bashId,
+			Body:    msg,
+			IsError: false,
 		}
 		if _, err := bashLogService.Create(context.Background(), createBashLogDTO); err != nil {
 			return err
@@ -224,20 +227,52 @@ func (u *BashUseCase) ExecBash(ctx *gin.Context) {
 		},
 	}
 
-	goshaExec := common.GetGoshaExec(&PgScanner{}, commands)
-	message := schema.Message{Message: "ok"}
+	ctx.JSON(http.StatusOK, schema.Message{Message: "ok"})
 
+	goshaExec := common.GetGoshaExec(&PgScanner{}, commands)
 	if isSync {
 		if errs := goshaExec.SyncRun(); errs != nil {
-			message.Message = fmt.Sprintf("Execute Error: %v", errs)
+			var execErr *gosha.ExecErr
+
+			bashLogService := service.GetBashLogService()
+
+			for _, err := range errs {
+				if errors.As(err, &execErr) {
+					bashId, err := uuid.FromString(execErr.Title)
+					if err == nil {
+						createBashLogDTO := dto.CreateBashLogDTO{
+							BashId:  bashId,
+							Body:    execErr.Detail,
+							IsError: true,
+						}
+						_, _ = bashLogService.Create(context.Background(), createBashLogDTO)
+					}
+				} else {
+					u.logger.Error("Unknown execute error: &v", err)
+				}
+			}
 		}
 	} else {
 		if err := goshaExec.Run(); err != nil {
-			message.Message = fmt.Sprintf("Execute Error: %v", err)
+			var execErr *gosha.ExecErr
+
+			bashLogService := service.GetBashLogService()
+
+			if errors.As(err, &execErr) {
+				bashId, err := uuid.FromString(execErr.Title)
+				if err == nil {
+					createBashLogDTO := dto.CreateBashLogDTO{
+						BashId:  bashId,
+						Body:    execErr.Detail,
+						IsError: true,
+					}
+					_, _ = bashLogService.Create(context.Background(), createBashLogDTO)
+				}
+			} else {
+				u.logger.Error("Unknown execute error: &v", err)
+			}
 		}
 	}
-
-	ctx.JSON(http.StatusOK, message)
 }
 
 // ExecBashList
@@ -297,26 +332,58 @@ func (u *BashUseCase) ExecBashList(ctx *gin.Context) {
 		}
 	}()
 
-	goshaExec := common.GetGoshaExec(&PgScanner{}, commands)
-	message := schema.Message{Message: "ok"}
+	ctx.JSON(http.StatusOK, schema.Message{Message: "ok"})
 
+	goshaExec := common.GetGoshaExec(&PgScanner{}, commands)
 	if isSync {
 		if errs := goshaExec.SyncRun(); errs != nil {
-			message.Message = fmt.Sprintf("Execute Error: %v", errs)
+			var execErr *gosha.ExecErr
+
+			bashLogService := service.GetBashLogService()
+
+			for _, err := range errs {
+				if errors.As(err, &execErr) {
+					bashId, err := uuid.FromString(execErr.Title)
+					if err == nil {
+						createBashLogDTO := dto.CreateBashLogDTO{
+							BashId:  bashId,
+							Body:    execErr.Detail,
+							IsError: true,
+						}
+						_, _ = bashLogService.Create(context.Background(), createBashLogDTO)
+					}
+				} else {
+					u.logger.Error("Unknown execute error: &v", err)
+				}
+			}
 		}
 	} else {
 		if err := goshaExec.Run(); err != nil {
-			message.Message = fmt.Sprintf("Execute Error: %v", err)
+			var execErr *gosha.ExecErr
+
+			bashLogService := service.GetBashLogService()
+
+			if errors.As(err, &execErr) {
+				bashId, err := uuid.FromString(execErr.Title)
+				if err == nil {
+					createBashLogDTO := dto.CreateBashLogDTO{
+						BashId:  bashId,
+						Body:    execErr.Detail,
+						IsError: true,
+					}
+					_, _ = bashLogService.Create(context.Background(), createBashLogDTO)
+				}
+			} else {
+				u.logger.Error("Unknown execute error: &v", err)
+			}
 		}
 	}
-
-	ctx.JSON(http.StatusOK, message)
 }
 
 func GeBashUseCase() IBashUseCase {
 	return &BashUseCase{
 		service:    service.GetBashService(),
-		logger:     common.GetLogger(),
+		logger:     log.GetLogger(),
 		httpErrors: config.GetHTTPErrors(),
 	}
 }

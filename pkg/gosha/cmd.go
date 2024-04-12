@@ -28,20 +28,20 @@ func runCmd(scanner IScanner, cmd Cmd) error {
 
 	stdout, err := cmdExec.StdoutPipe()
 	if err != nil {
-		return GetExecErr(cmdPath, ErrFmt(stdoutErrGroup, err))
+		return GetExecErr(cmd, ErrFmt(stdoutErrGroup, err))
 	}
 
 	if err = cmdExec.Start(); err != nil {
-		return GetExecErr(cmdPath, ErrFmt(startExecErrGroup, err))
+		return GetExecErr(cmd, ErrFmt(startExecErrGroup, err))
 
 	}
 
 	if err = scanner.Scan(stdout, cmd); err != nil {
-		return GetExecErr(cmdPath, ErrFmt(scanErrGroup, err))
+		return GetExecErr(cmd, ErrFmt(scanErrGroup, err))
 	}
 
 	if err = cmdExec.Wait(); err != nil {
-		return GetExecErr(cmdPath, ErrFmt(waitExecErrGroup, err))
+		return GetExecErr(cmd, ErrFmt(waitExecErrGroup, err))
 	}
 
 	return nil

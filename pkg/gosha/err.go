@@ -6,6 +6,7 @@ type (
 	ErrGroup string
 
 	ExecErr struct {
+		Title  string
 		Path   string
 		Detail string
 	}
@@ -26,9 +27,10 @@ func ErrFmt(group ErrGroup, err error) string {
 	return fmt.Sprintf("[%s] error: %s", group, err)
 }
 
-func GetExecErr(path string, detail string) error {
+func GetExecErr(cmd Cmd, detail string) error {
 	return &ExecErr{
-		Path:   path,
+		Title:  cmd.Title,
+		Path:   cmd.Path,
 		Detail: detail,
 	}
 }

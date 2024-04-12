@@ -3,8 +3,8 @@ package usecase
 import (
 	"context"
 	"net/http"
-	"pg-sh-scripts/internal/common"
 	"pg-sh-scripts/internal/config"
+	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/service"
 	"pg-sh-scripts/pkg/logging"
 
@@ -60,7 +60,7 @@ func (u *BashLogUseCase) GetBashLogListByBashId(ctx *gin.Context) {
 func GetBashLogUseCase() IBashLogUseCase {
 	return &BashLogUseCase{
 		service:    service.GetBashLogService(),
-		logger:     common.GetLogger(),
+		logger:     log.GetLogger(),
 		httpErrors: config.GetHTTPErrors(),
 	}
 }
