@@ -26,7 +26,7 @@ func (p PgBashLogRepository) GetAllByBashId(ctx context.Context, bashId uuid.UUI
 	p.logger.Debug(fmt.Sprintf("Start getting bash log list by bash id: %v", bashId))
 	q := `
 		SELECT
-			id, bash_id, body, created_at
+			id, bash_id, body, is_error, created_at
 		FROM
 		    scripts.bash_log
 		WHERE 
@@ -44,7 +44,7 @@ func (p PgBashLogRepository) GetAllByBashId(ctx context.Context, bashId uuid.UUI
 
 	for rows.Next() {
 		bashLog := model.BashLog{}
-		if err := rows.Scan(&bashLog.Id, &bashLog.BashId, &bashLog.Body, &bashLog.CreatedAt); err != nil {
+		if err := rows.Scan(&bashLog.Id, &bashLog.BashId, &bashLog.Body, &bashLog.IsError, &bashLog.CreatedAt); err != nil {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
 				p.logger.Error(fmt.Sprintf("Getting bash log Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
@@ -64,13 +64,13 @@ func (p PgBashLogRepository) Create(ctx context.Context, dto dto.CreateBashLogDT
 	p.logger.Debug(fmt.Sprintf("Start creating bash log for bash with id: %v", dto.BashId))
 	stmt := `
 		INSERT INTO scripts.bash_log
-			(bash_id, body)
+			(bash_id, body, is_error)
 		VALUES 
-			($1, $2)
-		RETURNING id, bash_id, body, created_at
+			($1, $2, $3)
+		RETURNING id, bash_id, body, is_error, created_at
 	`
 
-	row := p.db.QueryRow(ctx, stmt, dto.BashId, dto.Body)
+	row := p.db.QueryRow(ctx, stmt, dto.BashId, dto.Body, dto.IsError)
 	if err := row.Scan(&bashLog.Id, &bashLog.BashId, &bashLog.Body, &bashLog.CreatedAt); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
