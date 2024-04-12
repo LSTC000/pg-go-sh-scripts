@@ -3,10 +3,11 @@ package server
 import (
 	"database/sql"
 	"fmt"
+	"pg-sh-scripts/internal/log"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
-	"pg-sh-scripts/internal/log"
 )
 
 const (
