@@ -331,6 +331,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "isError": {
+                    "type": "boolean"
                 }
             }
         },

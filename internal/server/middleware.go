@@ -1,10 +1,11 @@
 package server
 
 import (
+	"errors"
 	"fmt"
-	"net/http"
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/log"
+	"pg-sh-scripts/internal/schema"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,10 +18,15 @@ func getRecoveryMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
+				var httpErr *schema.HTTPError
+
 				logger := log.GetLogger()
-				logger.Error(fmt.Sprintf("Unknown Error: %v", err))
+				logger.Error(fmt.Sprintf("Unknown error: %v", err))
+
 				httpErrors := config.GetHTTPErrors()
-				ctx.JSON(http.StatusInternalServerError, httpErrors.Internal)
+				errors.As(httpErrors.Internal, &httpErr)
+
+				ctx.JSON(httpErr.HTTPCode, httpErr)
 			}
 		}()
 		ctx.Next()

@@ -8,82 +8,82 @@ import (
 
 type HTTPErrors struct {
 	// Base Errors
-	Internal schema.HTTPError
-	Validate schema.HTTPError
+	Internal error
+	Validate error
 	// Bash Errors
-	BashFileExtension schema.HTTPError
-	BashFileBody      schema.HTTPError
-	BashCreate        schema.HTTPError
-	BashGet           schema.HTTPError
-	BashGetFile       schema.HTTPError
-	BashGetFilePath   schema.HTTPError
-	BashGetList       schema.HTTPError
-	BashExecute       schema.HTTPError
-	BashExecuteList   schema.HTTPError
+	BashFileExtension error
+	BashFileBody      error
+	BashCreate        error
+	BashGet           error
+	BashGetFile       error
+	BashGetFilePath   error
+	BashGetList       error
+	BashExecute       error
+	BashExecuteList   error
 	// Bash Log Errors
-	BashLogGetListByBashId schema.HTTPError
+	BashLogGetListByBashId error
 }
 
 func setHTTPErrors(errors *HTTPErrors) {
 	// Base Errors
-	errors.Internal = schema.HTTPError{
+	errors.Internal = &schema.HTTPError{
 		HTTPCode:    http.StatusInternalServerError,
 		ServiceCode: 0,
 		Detail:      "Internal Error",
 	}
-	errors.Validate = schema.HTTPError{
+	errors.Validate = &schema.HTTPError{
 		HTTPCode:    http.StatusUnprocessableEntity,
 		ServiceCode: 1,
 		Detail:      "Validation Error",
 	}
 	// Bash Errors
-	errors.BashFileExtension = schema.HTTPError{
+	errors.BashFileExtension = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 100,
 		Detail:      "Invalid Bash File Extension",
 	}
-	errors.BashFileBody = schema.HTTPError{
+	errors.BashFileBody = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 101,
 		Detail:      "Invalid Bash File Body",
 	}
-	errors.BashCreate = schema.HTTPError{
+	errors.BashCreate = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 102,
 		Detail:      "Creating Bash Error",
 	}
-	errors.BashGet = schema.HTTPError{
+	errors.BashGet = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 103,
 		Detail:      "Getting Bash Error",
 	}
-	errors.BashGetFile = schema.HTTPError{
+	errors.BashGetFile = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 104,
 		Detail:      "Getting Bash File Error",
 	}
-	errors.BashGetFilePath = schema.HTTPError{
+	errors.BashGetFilePath = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 105,
 		Detail:      "Getting Bash File Path Error",
 	}
-	errors.BashGetList = schema.HTTPError{
+	errors.BashGetList = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 106,
 		Detail:      "Getting Bash List Error",
 	}
-	errors.BashExecute = schema.HTTPError{
+	errors.BashExecute = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 107,
 		Detail:      "Executing Bash Error",
 	}
-	errors.BashExecuteList = schema.HTTPError{
+	errors.BashExecuteList = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 108,
 		Detail:      "Executing Bash List Error",
 	}
 	// Bash Log Errors
-	errors.BashLogGetListByBashId = schema.HTTPError{
+	errors.BashLogGetListByBashId = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 108,
 		Detail:      "Getting Bash Log List By Bash Id Error",

@@ -3,10 +3,8 @@ package service
 import (
 	"context"
 	"pg-sh-scripts/internal/dto"
-	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/internal/repo"
-	"pg-sh-scripts/pkg/logging"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -20,7 +18,6 @@ type (
 
 	BashService struct {
 		repository repo.IBashRepository
-		logger     *logging.Logger
 	}
 )
 
@@ -51,6 +48,5 @@ func (s *BashService) CreateBash(ctx context.Context, dto dto.CreateBashDTO) (*m
 func GetBashService() IBashService {
 	return &BashService{
 		repository: repo.GetPgBashRepository(),
-		logger:     log.GetLogger(),
 	}
 }

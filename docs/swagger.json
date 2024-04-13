@@ -325,6 +325,9 @@
                 },
                 "id": {
                     "type": "string"
+                },
+                "isError": {
+                    "type": "boolean"
                 }
             }
         },
