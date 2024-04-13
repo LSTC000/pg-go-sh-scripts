@@ -24,7 +24,7 @@ func (e *ExecErr) Error() string {
 }
 
 func ErrFmt(group ErrGroup, err error) string {
-	return fmt.Sprintf("[%s] error: %s", group, err)
+	return fmt.Sprintf("%s error: %s", group, err)
 }
 
 func GetExecErr(cmd Cmd, detail string) error {
