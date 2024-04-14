@@ -215,12 +215,14 @@ paths:
     get:
       description: Get list of bash scripts
       parameters:
-      - description: Limit param of pagination
+      - default: 20
+        description: Limit param of pagination
         in: query
         name: limit
         required: true
         type: integer
-      - description: Offset param of pagination
+      - default: 0
+        description: Offset param of pagination
         in: query
         name: offset
         required: true
@@ -248,12 +250,14 @@ paths:
         name: bashId
         required: true
         type: string
-      - description: Limit param of pagination
+      - default: 20
+        description: Limit param of pagination
         in: query
         name: limit
         required: true
         type: integer
-      - description: Offset param of pagination
+      - default: 0
+        description: Offset param of pagination
         in: query
         name: offset
         required: true

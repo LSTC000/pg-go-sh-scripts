@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"pg-sh-scripts/internal/api"
 	"pg-sh-scripts/internal/config"
+	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/usecase"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
@@ -41,17 +43,33 @@ func (h *BashLogHandler) Register(rg *gin.RouterGroup) {
 // @Success 200 {object} schema.SwagBashLogPaginationPage
 // @Failure 500 {object} schema.HTTPError
 // @Param bashId path string true "ID of bash script"
-// @Param limit query int true "Limit param of pagination"
-// @Param offset query int true "Offset param of pagination"
+// @Param limit query int true "Limit param of pagination" default(20)
+// @Param offset query int true "Offset param of pagination" default(0)
 // @Router /bash/log/{bashId}/list [get]
 func (h *BashLogHandler) GetBashLogListByBashId(c *gin.Context) {
+	var paginationParams schema.PaginationParams
+
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil {
+		api.RaiseError(c, h.httpErrors.Validate)
+		return
+	}
+	offset, err := strconv.Atoi(c.Query("offset"))
+	if err != nil {
+		api.RaiseError(c, h.httpErrors.Validate)
+		return
+	}
+
 	bashId, err := uuid.FromString(c.Param("bashId"))
 	if err != nil {
 		api.RaiseError(c, h.httpErrors.Validate)
 		return
 	}
 
-	bashLogList, err := h.useCase.GetBashLogListByBashId(bashId)
+	paginationParams.Limit = limit
+	paginationParams.Offset = offset
+
+	bashLogList, err := h.useCase.GetBashLogPaginationPageByBashId(bashId, paginationParams)
 	if err != nil {
 		api.RaiseError(c, err)
 		return

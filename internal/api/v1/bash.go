@@ -109,8 +109,8 @@ func (h *BashHandler) GetBashFileById(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} schema.SwagBashPaginationPage
 // @Failure 500 {object} schema.HTTPError
-// @Param limit query int true "Limit param of pagination"
-// @Param offset query int true "Offset param of pagination"
+// @Param limit query int true "Limit param of pagination" default(20)
+// @Param offset query int true "Offset param of pagination" default(0)
 // @Router /bash/list [get]
 func (h *BashHandler) GetBashList(c *gin.Context) {
 	var paginationParams schema.PaginationParams

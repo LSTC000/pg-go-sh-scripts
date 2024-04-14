@@ -20,7 +20,7 @@ type HTTPErrors struct {
 	BashExecute           error
 	BashRemove            error
 	// Bash Log Errors
-	BashLogGetListByBashId error
+	BashLogGetPaginationPageByBashId error
 }
 
 func setHTTPErrors(errors *HTTPErrors) {
@@ -77,10 +77,10 @@ func setHTTPErrors(errors *HTTPErrors) {
 		Detail:      "Removing Bash Error",
 	}
 	// Bash Log Errors
-	errors.BashLogGetListByBashId = &schema.HTTPError{
+	errors.BashLogGetPaginationPageByBashId = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 200,
-		Detail:      "Getting Bash Log List By Bash Id Error",
+		Detail:      "Getting Bash Log Pagination Page By Bash Id Error",
 	}
 }
 

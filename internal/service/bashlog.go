@@ -5,13 +5,14 @@ import (
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/internal/repo"
+	"pg-sh-scripts/internal/schema"
 
 	uuid "github.com/satori/go.uuid"
 )
 
 type (
 	IBashLogService interface {
-		GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*model.BashLog, error)
+		GetPaginationPageByBashId(ctx context.Context, bashId uuid.UUID, paginationParams schema.PaginationParams) (schema.PaginationPage[*model.BashLog], error)
 		Create(ctx context.Context, dto dto.CreateBashLogDTO) (*model.BashLog, error)
 	}
 
@@ -20,12 +21,12 @@ type (
 	}
 )
 
-func (s *BashLogService) GetAllByBashId(ctx context.Context, bashId uuid.UUID) ([]*model.BashLog, error) {
-	bashLogList, err := s.repository.GetAllByBashId(ctx, bashId)
+func (s *BashLogService) GetPaginationPageByBashId(ctx context.Context, bashId uuid.UUID, paginationParams schema.PaginationParams) (schema.PaginationPage[*model.BashLog], error) {
+	bashLogPaginationPage, err := s.repository.GetPaginationPageByBashId(ctx, bashId, paginationParams)
 	if err != nil {
-		return nil, err
+		return bashLogPaginationPage, err
 	}
-	return bashLogList, nil
+	return bashLogPaginationPage, nil
 }
 
 func (s *BashLogService) Create(ctx context.Context, dto dto.CreateBashLogDTO) (*model.BashLog, error) {

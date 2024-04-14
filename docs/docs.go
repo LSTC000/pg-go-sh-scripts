@@ -116,6 +116,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "default": 20,
                         "description": "Limit param of pagination",
                         "name": "limit",
                         "in": "query",
@@ -123,6 +124,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "default": 0,
                         "description": "Offset param of pagination",
                         "name": "offset",
                         "in": "query",
@@ -165,6 +167,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "default": 20,
                         "description": "Limit param of pagination",
                         "name": "limit",
                         "in": "query",
@@ -172,6 +175,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
+                        "default": 0,
                         "description": "Offset param of pagination",
                         "name": "offset",
                         "in": "query",

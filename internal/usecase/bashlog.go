@@ -4,6 +4,7 @@ import (
 	"context"
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/model"
+	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/service"
 
 	uuid "github.com/satori/go.uuid"
@@ -11,7 +12,7 @@ import (
 
 type (
 	IBashLogUseCase interface {
-		GetBashLogListByBashId(bashId uuid.UUID) ([]*model.BashLog, error)
+		GetBashLogPaginationPageByBashId(bashId uuid.UUID, paginationParams schema.PaginationParams) (schema.PaginationPage[*model.BashLog], error)
 	}
 
 	BashLogUseCase struct {
@@ -20,19 +21,21 @@ type (
 	}
 )
 
-func (u *BashLogUseCase) GetBashLogListByBashId(bashId uuid.UUID) ([]*model.BashLog, error) {
+func (u *BashLogUseCase) GetBashLogPaginationPageByBashId(bashId uuid.UUID, paginationParams schema.PaginationParams) (schema.PaginationPage[*model.BashLog], error) {
+	var bashLogPaginationPage schema.PaginationPage[*model.BashLog]
+
 	bashService := service.GetBashService()
 	_, err := bashService.GetOneById(context.Background(), bashId)
 	if err != nil {
-		return nil, u.httpErrors.BashDoesNotExists
+		return bashLogPaginationPage, u.httpErrors.BashDoesNotExists
 	}
 
-	bashLogList, err := u.service.GetAllByBashId(context.Background(), bashId)
+	bashLogPaginationPage, err = u.service.GetPaginationPageByBashId(context.Background(), bashId, paginationParams)
 	if err != nil {
-		return nil, u.httpErrors.BashLogGetListByBashId
+		return bashLogPaginationPage, u.httpErrors.BashLogGetPaginationPageByBashId
 	}
 
-	return bashLogList, nil
+	return bashLogPaginationPage, nil
 }
 
 func GetBashLogUseCase() IBashLogUseCase {
