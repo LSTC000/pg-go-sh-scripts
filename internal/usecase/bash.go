@@ -11,7 +11,7 @@ import (
 	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/service"
-	"pg-sh-scripts/internal/types/alias"
+	"pg-sh-scripts/internal/type/alias"
 	"pg-sh-scripts/internal/util"
 	"pg-sh-scripts/pkg/gosha"
 	"time"

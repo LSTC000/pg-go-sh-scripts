@@ -8,6 +8,7 @@ import (
 	"pg-sh-scripts/internal/api"
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/dto"
+	"pg-sh-scripts/internal/msg"
 	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/usecase"
 	"strconv"
@@ -178,7 +179,12 @@ func (h *BashHandler) CreateBash(c *gin.Context) {
 func (h *BashHandler) ExecBashList(c *gin.Context) {
 	execBashDTOList := make([]dto.ExecBashDTO, 0)
 
-	isSync := c.GetBool("isSync")
+	isSync, err := strconv.ParseBool(c.Query("isSync"))
+	if err != nil {
+		api.RaiseError(c, h.httpErrors.Validate)
+		return
+	}
+
 	if err := c.ShouldBindJSON(&execBashDTOList); err != nil {
 		api.RaiseError(c, h.httpErrors.Validate)
 		return
@@ -189,7 +195,7 @@ func (h *BashHandler) ExecBashList(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, schema.Message{Message: "ok"})
+	c.JSON(http.StatusOK, schema.Message{Message: msg.OK})
 }
 
 // RemoveBashById
