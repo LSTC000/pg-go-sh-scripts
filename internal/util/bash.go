@@ -45,7 +45,7 @@ func GetBashFileBody(file *multipart.FileHeader) (string, error) {
 	wr := bytes.Buffer{}
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
-		wr.WriteString(sc.Text())
+		wr.WriteString(sc.Text() + "\n")
 	}
 
 	bashFileBody = wr.String()
