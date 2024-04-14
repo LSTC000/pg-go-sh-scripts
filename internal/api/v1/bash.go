@@ -19,7 +19,6 @@ const (
 	getBashFileByIdPath = "/:id/file"
 	getBashListPath     = "/list"
 	createBashPath      = ""
-	execBashPath        = "/execute"
 	execBashListPath    = "/execute/list"
 	removeBashPath      = "/:id"
 )
@@ -31,7 +30,6 @@ type (
 		GetBashList(*gin.Context)
 		CreateBash(*gin.Context)
 		ExecBash(*gin.Context)
-		ExecBashList(*gin.Context)
 		RemoveBashById(*gin.Context)
 	}
 
@@ -48,7 +46,6 @@ func (h *BashHandler) Register(rg *gin.RouterGroup) {
 		group.GET(getBashFileByIdPath, h.GetBashFileById)
 		group.GET(getBashListPath, h.GetBashList)
 		group.POST(createBashPath, h.CreateBash)
-		group.POST(execBashPath, h.ExecBash)
 		group.POST(execBashListPath, h.ExecBashList)
 		group.DELETE(removeBashPath, h.RemoveBashById)
 	}
@@ -148,36 +145,8 @@ func (h *BashHandler) CreateBash(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, bash)
 }
 
-// ExecBash
-// @Summary Execute
-// @Tags Bash
-// @Description Execute bash script
-// @Accept json
-// @Produce json
-// @Success 200 {object} schema.Message
-// @Failure 500 {object} schema.HTTPError
-// @Param isSync query bool true "Execute type: if true, then in a multithreading, otherwise in a single thread"
-// @Param execute body dto.ExecBashDTO true "Execute bash script schema"
-// @Router /bash/execute [post]
-func (h *BashHandler) ExecBash(ctx *gin.Context) {
-	execBashDTO := dto.ExecBashDTO{}
-
-	isSync := ctx.GetBool("isSync")
-	if err := ctx.ShouldBindJSON(&execBashDTO); err != nil {
-		api.RaiseError(ctx, h.httpErrors.Validate)
-		return
-	}
-
-	if err := h.useCase.ExecBash(isSync, execBashDTO); err != nil {
-		api.RaiseError(ctx, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, schema.Message{Message: "ok"})
-}
-
 // ExecBashList
-// @Summary Execute list
+// @Summary Execute List
 // @Tags Bash
 // @Description Execute list of bash scripts
 // @Accept json

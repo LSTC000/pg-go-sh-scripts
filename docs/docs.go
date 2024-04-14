@@ -53,53 +53,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/bash/execute": {
-            "post": {
-                "description": "Execute bash script",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Bash"
-                ],
-                "summary": "Execute",
-                "parameters": [
-                    {
-                        "type": "boolean",
-                        "description": "Execute type: if true, then in a multithreading, otherwise in a single thread",
-                        "name": "isSync",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "description": "Execute bash script schema",
-                        "name": "execute",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.ExecBashDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/schema.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/schema.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
         "/bash/execute/list": {
             "post": {
                 "description": "Execute list of bash scripts",
@@ -112,7 +65,7 @@ const docTemplate = `{
                 "tags": [
                     "Bash"
                 ],
-                "summary": "Execute list",
+                "summary": "Execute List",
                 "parameters": [
                     {
                         "type": "boolean",

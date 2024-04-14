@@ -145,38 +145,6 @@ paths:
       summary: Get file by id
       tags:
       - Bash
-  /bash/execute:
-    post:
-      consumes:
-      - application/json
-      description: Execute bash script
-      parameters:
-      - description: 'Execute type: if true, then in a multithreading, otherwise in
-          a single thread'
-        in: query
-        name: isSync
-        required: true
-        type: boolean
-      - description: Execute bash script schema
-        in: body
-        name: execute
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ExecBashDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/schema.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/schema.HTTPError'
-      summary: Execute
-      tags:
-      - Bash
   /bash/execute/list:
     post:
       consumes:
@@ -208,7 +176,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/schema.HTTPError'
-      summary: Execute list
+      summary: Execute List
       tags:
       - Bash
   /bash/list:

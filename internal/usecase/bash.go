@@ -24,7 +24,6 @@ type (
 		GetBashFileBufferById(bashId uuid.UUID) (*bytes.Buffer, alias.BashTitle, error)
 		GetBashList() ([]*model.Bash, error)
 		CreateBash(file *multipart.FileHeader) (*model.Bash, error)
-		ExecBash(isSync bool, dto dto.ExecBashDTO) error
 		ExecBashList(isSync bool, dto []dto.ExecBashDTO) error
 		RemoveBashById(bashId uuid.UUID) (*model.Bash, error)
 	}
@@ -88,48 +87,10 @@ func (u *BashUseCase) CreateBash(file *multipart.FileHeader) (*model.Bash, error
 	return bash, nil
 }
 
-func (u *BashUseCase) ExecBash(isSync bool, dto dto.ExecBashDTO) error {
-	bash, err := u.service.GetOneById(context.Background(), dto.Id)
-	if err != nil {
-		return u.httpErrors.BashGet
-	}
-
-	tmpFile, err := gosha.GetTmpFile(bash.Body)
-	if err != nil {
-		return u.httpErrors.BashExecute
-	}
-	defer func() {
-		_ = gosha.RemoveTmpFile(tmpFile)
-	}()
-
-	commands := []gosha.Cmd{
-		{
-			Title:   bash.Id.String(),
-			Path:    tmpFile.Name(),
-			Timeout: dto.TimeoutSeconds * time.Second,
-		},
-	}
-
-	customGoshaExec := common.GetCustomGoshaExec(isSync, commands)
-	customGoshaExec.Run()
-
-	return nil
-}
-
-// ExecBashList
-// @Summary Execute list
-// @Tags Bash
-// @Description Execute list of bash scripts
-// @Accept json
-// @Produce json
-// @Success 200 {object} schema.Message
-// @Failure 500 {object} schema.HTTPError
-// @Param isSync query bool true "Execute type: if true, then in a multithreading, otherwise in a single thread"
-// @Param execute body []dto.ExecBashDTO true "List of execute bash script models"
-// @Router /bash/execute/list [post]
 func (u *BashUseCase) ExecBashList(isSync bool, dto []dto.ExecBashDTO) error {
 	execBashCount := len(dto)
 	bashList := make([]*model.Bash, 0, execBashCount)
+
 	for _, execBashDTO := range dto {
 		bash, err := u.service.GetOneById(context.Background(), execBashDTO.Id)
 		if err != nil {
@@ -140,6 +101,7 @@ func (u *BashUseCase) ExecBashList(isSync bool, dto []dto.ExecBashDTO) error {
 
 	tmpFiles := make([]*os.File, 0, execBashCount)
 	commands := make([]gosha.Cmd, 0, execBashCount)
+
 	for i := 0; i < execBashCount; i++ {
 		bash := bashList[i]
 		execBashDTO := dto[i]
