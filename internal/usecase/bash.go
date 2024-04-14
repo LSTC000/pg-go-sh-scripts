@@ -26,6 +26,7 @@ type (
 		CreateBash(file *multipart.FileHeader) (*model.Bash, error)
 		ExecBash(isSync bool, dto dto.ExecBashDTO) error
 		ExecBashList(isSync bool, dto []dto.ExecBashDTO) error
+		RemoveBashById(bashId uuid.UUID) (*model.Bash, error)
 	}
 
 	BashUseCase struct {
@@ -79,7 +80,7 @@ func (u *BashUseCase) CreateBash(file *multipart.FileHeader) (*model.Bash, error
 	}
 
 	createBashDTO := dto.CreateBashDTO{Title: fileTitle, Body: fileBody}
-	bash, err := u.service.CreateBash(context.Background(), createBashDTO)
+	bash, err := u.service.Create(context.Background(), createBashDTO)
 	if err != nil {
 		return nil, u.httpErrors.BashCreate
 	}
@@ -166,6 +167,20 @@ func (u *BashUseCase) ExecBashList(isSync bool, dto []dto.ExecBashDTO) error {
 	customGoshaExec.Run()
 
 	return nil
+}
+
+func (u *BashUseCase) RemoveBashById(bashId uuid.UUID) (*model.Bash, error) {
+	_, err := u.service.GetOneById(context.Background(), bashId)
+	if err != nil {
+		return nil, u.httpErrors.BashGet
+	}
+
+	bash, err := u.service.RemoveById(context.Background(), bashId)
+	if err != nil {
+		return nil, u.httpErrors.BashRemove
+	}
+
+	return bash, nil
 }
 
 func GeBashUseCase() IBashUseCase {

@@ -78,6 +78,28 @@ paths:
       tags:
       - Bash
   /bash/{id}:
+    delete:
+      description: Remove bash script by id
+      parameters:
+      - description: ID of bash script
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Bash'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/schema.HTTPError'
+      summary: Remove by id
+      tags:
+      - Bash
     get:
       description: Get bash script by id
       parameters:

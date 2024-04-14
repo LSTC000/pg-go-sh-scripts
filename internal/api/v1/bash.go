@@ -21,6 +21,7 @@ const (
 	createBashPath      = ""
 	execBashPath        = "/execute"
 	execBashListPath    = "/execute/list"
+	removeBashPath      = "/:id"
 )
 
 type (
@@ -31,6 +32,7 @@ type (
 		CreateBash(*gin.Context)
 		ExecBash(*gin.Context)
 		ExecBashList(*gin.Context)
+		RemoveBashById(*gin.Context)
 	}
 
 	BashHandler struct {
@@ -48,6 +50,7 @@ func (h *BashHandler) Register(rg *gin.RouterGroup) {
 		group.POST(createBashPath, h.CreateBash)
 		group.POST(execBashPath, h.ExecBash)
 		group.POST(execBashListPath, h.ExecBashList)
+		group.DELETE(removeBashPath, h.RemoveBashById)
 	}
 }
 
@@ -199,6 +202,31 @@ func (h *BashHandler) ExecBashList(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, schema.Message{Message: "ok"})
+}
+
+// RemoveBashById
+// @Summary Remove by id
+// @Tags Bash
+// @Description Remove bash script by id
+// @Produce json
+// @Success 200 {object} model.Bash
+// @Failure 500 {object} schema.HTTPError
+// @Param id path string true "ID of bash script"
+// @Router /bash/{id} [delete]
+func (h *BashHandler) RemoveBashById(ctx *gin.Context) {
+	bashId, err := uuid.FromString(ctx.Param("id"))
+	if err != nil {
+		api.RaiseError(ctx, h.httpErrors.Validate)
+		return
+	}
+
+	bash, err := h.useCase.RemoveBashById(bashId)
+	if err != nil {
+		api.RaiseError(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, bash)
 }
 
 func GetBashHandler() api.IHandler {

@@ -107,6 +107,31 @@ func (p PgBashRepository) Create(ctx context.Context, dto dto.CreateBashDTO) (*m
 	return &bash, nil
 }
 
+func (p PgBashRepository) RemoveById(ctx context.Context, id uuid.UUID) (*model.Bash, error) {
+	bash := model.Bash{}
+
+	p.logger.Debug(fmt.Sprintf("Start removing bash with id: %s", id))
+	stmt := `
+		DELETE FROM 
+		    scripts.bash
+		WHERE 
+			id = $1
+		RETURNING id, title, body, created_at
+	`
+
+	row := p.db.QueryRow(ctx, stmt, id)
+	if err := row.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			p.logger.Error(fmt.Sprintf("Removing bash Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
+		}
+		return nil, err
+	}
+	p.logger.Debug(fmt.Sprintf("Finish removing bash with id: %s", id))
+
+	return &bash, nil
+}
+
 func GetPgBashRepository() IBashRepository {
 	logger := log.GetLogger()
 	pg, err := db.GetPgClient()

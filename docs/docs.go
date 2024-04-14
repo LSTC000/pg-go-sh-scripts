@@ -250,6 +250,39 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "Remove bash script by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bash"
+                ],
+                "summary": "Remove by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of bash script",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Bash"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/schema.HTTPError"
+                        }
+                    }
+                }
             }
         },
         "/bash/{id}/file": {

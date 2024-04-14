@@ -20,6 +20,7 @@ type HTTPErrors struct {
 	BashGetList       error
 	BashExecute       error
 	BashExecuteList   error
+	BashRemove        error
 	// Bash Log Errors
 	BashLogGetListByBashId error
 }
@@ -81,6 +82,11 @@ func setHTTPErrors(errors *HTTPErrors) {
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 108,
 		Detail:      "Executing Bash List Error",
+	}
+	errors.BashRemove = &schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
+		ServiceCode: 109,
+		Detail:      "Removing Bash Error",
 	}
 	// Bash Log Errors
 	errors.BashLogGetListByBashId = &schema.HTTPError{
