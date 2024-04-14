@@ -31,9 +31,11 @@ type (
 // @Tags Bash Log
 // @Description Get list of bash logs by bash id
 // @Produce json
-// @Success 200 {array} model.BashLog
+// @Success 200 {object} schema.SwagBashLogPaginationLimitOffsetPage
 // @Failure 500 {object} schema.HTTPError
 // @Param bashId path string true "ID of bash script"
+// @Param limit query int true "Limit param of pagination"
+// @Param offset query int true "Offset param of pagination"
 // @Router /bash/log/{bashId}/list [get]
 func (h *BashLogHandler) GetBashLogListByBashId(ctx *gin.Context) {
 	bashId, err := uuid.FromString(ctx.Param("bashId"))

@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	_ "pg-sh-scripts/docs"
 	"pg-sh-scripts/internal/config"
 
 	"github.com/gin-gonic/gin"

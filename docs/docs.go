@@ -113,14 +113,27 @@ const docTemplate = `{
                     "Bash"
                 ],
                 "summary": "Get list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit param of pagination",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset param of pagination",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Bash"
-                            }
+                            "$ref": "#/definitions/schema.SwagBashPaginationLimitOffsetPage"
                         }
                     },
                     "500": {
@@ -149,16 +162,27 @@ const docTemplate = `{
                         "name": "bashId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit param of pagination",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset param of pagination",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.BashLog"
-                            }
+                            "$ref": "#/definitions/schema.SwagBashLogPaginationLimitOffsetPage"
                         }
                     },
                     "500": {
@@ -279,7 +303,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "59628b82-356c-4745-bc81-187015cde387"
                 },
                 "timeoutSeconds": {
                     "type": "integer"
@@ -293,10 +318,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "createdAt": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2024-04-14T15:50:21.907561+07:00"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "59628b82-356c-4745-bc81-187015cde387"
                 },
                 "title": {
                     "type": "string"
@@ -307,16 +334,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "bashId": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "59628b82-356c-4745-bc81-187015cde387"
                 },
                 "body": {
                     "type": "string"
                 },
                 "createdAt": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2024-04-14T15:50:21.907561+07:00"
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "f4f4d096-ef4a-4649-8346-a952e2ca27d3"
                 },
                 "isError": {
                     "type": "boolean"
@@ -342,6 +372,46 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "schema.SwagBashLogPaginationLimitOffsetPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.BashLog"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.SwagBashPaginationLimitOffsetPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Bash"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         }

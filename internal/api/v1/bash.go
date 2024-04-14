@@ -2,15 +2,14 @@ package v1
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
 	"net/http"
 	"pg-sh-scripts/internal/api"
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/usecase"
-
-	"github.com/gin-gonic/gin"
-	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -107,8 +106,10 @@ func (h *BashHandler) GetBashFileById(ctx *gin.Context) {
 // @Tags Bash
 // @Description Get list of bash scripts
 // @Produce json
-// @Success 200 {array} model.Bash
+// @Success 200 {object} schema.SwagBashPaginationLimitOffsetPage
 // @Failure 500 {object} schema.HTTPError
+// @Param limit query int true "Limit param of pagination"
+// @Param offset query int true "Offset param of pagination"
 // @Router /bash/list [get]
 func (h *BashHandler) GetBashList(ctx *gin.Context) {
 	bashList, err := h.useCase.GetBashList()

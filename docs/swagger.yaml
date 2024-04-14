@@ -3,6 +3,7 @@ definitions:
   dto.ExecBashDTO:
     properties:
       id:
+        example: 59628b82-356c-4745-bc81-187015cde387
         type: string
       timeoutSeconds:
         type: integer
@@ -12,8 +13,10 @@ definitions:
       body:
         type: string
       createdAt:
+        example: "2024-04-14T15:50:21.907561+07:00"
         type: string
       id:
+        example: 59628b82-356c-4745-bc81-187015cde387
         type: string
       title:
         type: string
@@ -21,12 +24,15 @@ definitions:
   model.BashLog:
     properties:
       bashId:
+        example: 59628b82-356c-4745-bc81-187015cde387
         type: string
       body:
         type: string
       createdAt:
+        example: "2024-04-14T15:50:21.907561+07:00"
         type: string
       id:
+        example: f4f4d096-ef4a-4649-8346-a952e2ca27d3
         type: string
       isError:
         type: boolean
@@ -44,6 +50,32 @@ definitions:
     properties:
       message:
         type: string
+    type: object
+  schema.SwagBashLogPaginationLimitOffsetPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/model.BashLog'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  schema.SwagBashPaginationLimitOffsetPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/model.Bash'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
     type: object
 host: 0.0.0.0:8000
 info:
@@ -182,15 +214,24 @@ paths:
   /bash/list:
     get:
       description: Get list of bash scripts
+      parameters:
+      - description: Limit param of pagination
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Offset param of pagination
+        in: query
+        name: offset
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Bash'
-            type: array
+            $ref: '#/definitions/schema.SwagBashPaginationLimitOffsetPage'
         "500":
           description: Internal Server Error
           schema:
@@ -207,15 +248,23 @@ paths:
         name: bashId
         required: true
         type: string
+      - description: Limit param of pagination
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Offset param of pagination
+        in: query
+        name: offset
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.BashLog'
-            type: array
+            $ref: '#/definitions/schema.SwagBashLogPaginationLimitOffsetPage'
         "500":
           description: Internal Server Error
           schema:
