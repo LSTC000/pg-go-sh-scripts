@@ -24,7 +24,7 @@ func (u *BashLogUseCase) GetBashLogListByBashId(bashId uuid.UUID) ([]*model.Bash
 	bashService := service.GetBashService()
 	_, err := bashService.GetOneById(context.Background(), bashId)
 	if err != nil {
-		return nil, u.httpErrors.BashGet
+		return nil, u.httpErrors.BashDoesNotExists
 	}
 
 	bashLogList, err := u.service.GetAllByBashId(context.Background(), bashId)

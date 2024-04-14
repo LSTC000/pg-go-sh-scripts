@@ -37,7 +37,7 @@ type (
 func (u *BashUseCase) GetBashById(bashId uuid.UUID) (*model.Bash, error) {
 	bash, err := u.service.GetOneById(context.Background(), bashId)
 	if err != nil {
-		return nil, u.httpErrors.BashGet
+		return nil, u.httpErrors.BashDoesNotExists
 	}
 	return bash, nil
 }
@@ -45,12 +45,12 @@ func (u *BashUseCase) GetBashById(bashId uuid.UUID) (*model.Bash, error) {
 func (u *BashUseCase) GetBashFileBufferById(bashId uuid.UUID) (*bytes.Buffer, alias.BashTitle, error) {
 	bash, err := u.service.GetOneById(context.Background(), bashId)
 	if err != nil {
-		return nil, "", u.httpErrors.BashGet
+		return nil, "", u.httpErrors.BashDoesNotExists
 	}
 
 	bashFileBuffer, err := util.GetBashFileBuffer(bash.Title, bash.Body)
 	if err != nil {
-		return nil, "", u.httpErrors.BashGetFile
+		return nil, "", u.httpErrors.BashGetFileBuffer
 	}
 
 	return bashFileBuffer, bash.Title, nil
@@ -94,7 +94,7 @@ func (u *BashUseCase) ExecBashList(isSync bool, dto []dto.ExecBashDTO) error {
 	for _, execBashDTO := range dto {
 		bash, err := u.service.GetOneById(context.Background(), execBashDTO.Id)
 		if err != nil {
-			return u.httpErrors.BashGet
+			return u.httpErrors.BashDoesNotExists
 		}
 		bashList = append(bashList, bash)
 	}
@@ -134,7 +134,7 @@ func (u *BashUseCase) ExecBashList(isSync bool, dto []dto.ExecBashDTO) error {
 func (u *BashUseCase) RemoveBashById(bashId uuid.UUID) (*model.Bash, error) {
 	_, err := u.service.GetOneById(context.Background(), bashId)
 	if err != nil {
-		return nil, u.httpErrors.BashGet
+		return nil, u.httpErrors.BashDoesNotExists
 	}
 
 	bash, err := u.service.RemoveById(context.Background(), bashId)

@@ -14,9 +14,8 @@ type HTTPErrors struct {
 	BashFileExtension error
 	BashFileBody      error
 	BashCreate        error
-	BashGet           error
-	BashGetFile       error
-	BashGetFilePath   error
+	BashDoesNotExists error
+	BashGetFileBuffer error
 	BashGetList       error
 	BashExecute       error
 	BashRemove        error
@@ -52,34 +51,29 @@ func setHTTPErrors(errors *HTTPErrors) {
 		ServiceCode: 102,
 		Detail:      "Creating Bash Error",
 	}
-	errors.BashGet = &schema.HTTPError{
+	errors.BashDoesNotExists = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 103,
-		Detail:      "Getting Bash Error",
+		Detail:      "Bash Does Not Exists",
 	}
-	errors.BashGetFile = &schema.HTTPError{
+	errors.BashGetFileBuffer = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 104,
-		Detail:      "Getting Bash File Error",
-	}
-	errors.BashGetFilePath = &schema.HTTPError{
-		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 105,
-		Detail:      "Getting Bash File Path Error",
+		Detail:      "Getting Bash File Buffer Error",
 	}
 	errors.BashGetList = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 106,
+		ServiceCode: 105,
 		Detail:      "Getting Bash List Error",
 	}
 	errors.BashExecute = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 107,
+		ServiceCode: 106,
 		Detail:      "Executing Bash Error",
 	}
 	errors.BashRemove = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 108,
+		ServiceCode: 107,
 		Detail:      "Removing Bash Error",
 	}
 	// Bash Log Errors
