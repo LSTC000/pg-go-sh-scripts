@@ -127,7 +127,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/schema.SwagBashPaginationLimitOffsetPage"
+                            "$ref": "#/definitions/schema.SwagBashPaginationPage"
                         }
                     },
                     "500": {
@@ -176,7 +176,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/schema.SwagBashLogPaginationLimitOffsetPage"
+                            "$ref": "#/definitions/schema.SwagBashLogPaginationPage"
                         }
                     },
                     "500": {
@@ -369,7 +369,7 @@
                 }
             }
         },
-        "schema.SwagBashLogPaginationLimitOffsetPage": {
+        "schema.SwagBashLogPaginationPage": {
             "type": "object",
             "properties": {
                 "items": {
@@ -389,7 +389,7 @@
                 }
             }
         },
-        "schema.SwagBashPaginationLimitOffsetPage": {
+        "schema.SwagBashPaginationPage": {
             "type": "object",
             "properties": {
                 "items": {

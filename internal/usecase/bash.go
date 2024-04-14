@@ -9,6 +9,7 @@ import (
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/model"
+	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/service"
 	"pg-sh-scripts/internal/types/alias"
 	"pg-sh-scripts/internal/util"
@@ -22,7 +23,7 @@ type (
 	IBashUseCase interface {
 		GetBashById(bashId uuid.UUID) (*model.Bash, error)
 		GetBashFileBufferById(bashId uuid.UUID) (*bytes.Buffer, alias.BashTitle, error)
-		GetBashList() ([]*model.Bash, error)
+		GetBashPaginationPage(paginationParams schema.PaginationParams) (schema.PaginationPage[*model.Bash], error)
 		CreateBash(file *multipart.FileHeader) (*model.Bash, error)
 		ExecBashList(isSync bool, dto []dto.ExecBashDTO) error
 		RemoveBashById(bashId uuid.UUID) (*model.Bash, error)
@@ -56,12 +57,12 @@ func (u *BashUseCase) GetBashFileBufferById(bashId uuid.UUID) (*bytes.Buffer, al
 	return bashFileBuffer, bash.Title, nil
 }
 
-func (u *BashUseCase) GetBashList() ([]*model.Bash, error) {
-	bashList, err := u.service.GetAll(context.Background())
+func (u *BashUseCase) GetBashPaginationPage(paginationParams schema.PaginationParams) (schema.PaginationPage[*model.Bash], error) {
+	bashPaginationPage, err := u.service.GetPaginationPage(context.Background(), paginationParams)
 	if err != nil {
-		return nil, u.httpErrors.BashGetList
+		return bashPaginationPage, u.httpErrors.BashGetPaginationPage
 	}
-	return bashList, nil
+	return bashPaginationPage, nil
 }
 
 func (u *BashUseCase) CreateBash(file *multipart.FileHeader) (*model.Bash, error) {

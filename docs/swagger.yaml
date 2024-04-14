@@ -51,7 +51,7 @@ definitions:
       message:
         type: string
     type: object
-  schema.SwagBashLogPaginationLimitOffsetPage:
+  schema.SwagBashLogPaginationPage:
     properties:
       items:
         items:
@@ -64,7 +64,7 @@ definitions:
       total:
         type: integer
     type: object
-  schema.SwagBashPaginationLimitOffsetPage:
+  schema.SwagBashPaginationPage:
     properties:
       items:
         items:
@@ -231,7 +231,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/schema.SwagBashPaginationLimitOffsetPage'
+            $ref: '#/definitions/schema.SwagBashPaginationPage'
         "500":
           description: Internal Server Error
           schema:
@@ -264,7 +264,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/schema.SwagBashLogPaginationLimitOffsetPage'
+            $ref: '#/definitions/schema.SwagBashLogPaginationPage'
         "500":
           description: Internal Server Error
           schema:

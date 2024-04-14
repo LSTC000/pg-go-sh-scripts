@@ -133,7 +133,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/schema.SwagBashPaginationLimitOffsetPage"
+                            "$ref": "#/definitions/schema.SwagBashPaginationPage"
                         }
                     },
                     "500": {
@@ -182,7 +182,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/schema.SwagBashLogPaginationLimitOffsetPage"
+                            "$ref": "#/definitions/schema.SwagBashLogPaginationPage"
                         }
                     },
                     "500": {
@@ -375,7 +375,7 @@ const docTemplate = `{
                 }
             }
         },
-        "schema.SwagBashLogPaginationLimitOffsetPage": {
+        "schema.SwagBashLogPaginationPage": {
             "type": "object",
             "properties": {
                 "items": {
@@ -395,7 +395,7 @@ const docTemplate = `{
                 }
             }
         },
-        "schema.SwagBashPaginationLimitOffsetPage": {
+        "schema.SwagBashPaginationPage": {
             "type": "object",
             "properties": {
                 "items": {

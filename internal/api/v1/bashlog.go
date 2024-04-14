@@ -17,7 +17,7 @@ const (
 
 type (
 	IBashLogHandler interface {
-		GetBashLogUseCase(ctx *gin.Context)
+		GetBashLogUseCase(c *gin.Context)
 	}
 
 	BashLogHandler struct {
@@ -26,38 +26,38 @@ type (
 	}
 )
 
-// GetBashLogListByBashId
-// @Summary Get list by bash id
-// @Tags Bash Log
-// @Description Get list of bash logs by bash id
-// @Produce json
-// @Success 200 {object} schema.SwagBashLogPaginationLimitOffsetPage
-// @Failure 500 {object} schema.HTTPError
-// @Param bashId path string true "ID of bash script"
-// @Param limit query int true "Limit param of pagination"
-// @Param offset query int true "Offset param of pagination"
-// @Router /bash/log/{bashId}/list [get]
-func (h *BashLogHandler) GetBashLogListByBashId(ctx *gin.Context) {
-	bashId, err := uuid.FromString(ctx.Param("bashId"))
-	if err != nil {
-		api.RaiseError(ctx, h.httpErrors.Validate)
-		return
-	}
-
-	bashLogList, err := h.useCase.GetBashLogListByBashId(bashId)
-	if err != nil {
-		api.RaiseError(ctx, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, bashLogList)
-}
-
 func (h *BashLogHandler) Register(rg *gin.RouterGroup) {
 	group := rg.Group(groupBashLogPath)
 	{
 		group.GET(getBashLogByBashIdPath, h.GetBashLogListByBashId)
 	}
+}
+
+// GetBashLogListByBashId
+// @Summary Get list by bash id
+// @Tags Bash Log
+// @Description Get list of bash logs by bash id
+// @Produce json
+// @Success 200 {object} schema.SwagBashLogPaginationPage
+// @Failure 500 {object} schema.HTTPError
+// @Param bashId path string true "ID of bash script"
+// @Param limit query int true "Limit param of pagination"
+// @Param offset query int true "Offset param of pagination"
+// @Router /bash/log/{bashId}/list [get]
+func (h *BashLogHandler) GetBashLogListByBashId(c *gin.Context) {
+	bashId, err := uuid.FromString(c.Param("bashId"))
+	if err != nil {
+		api.RaiseError(c, h.httpErrors.Validate)
+		return
+	}
+
+	bashLogList, err := h.useCase.GetBashLogListByBashId(bashId)
+	if err != nil {
+		api.RaiseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, bashLogList)
 }
 
 func GetBashLogHandler() api.IHandler {

@@ -8,6 +8,7 @@ import (
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/model"
+	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/pkg/logging"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -46,26 +47,40 @@ func (p PgBashRepository) GetOneById(ctx context.Context, id uuid.UUID) (*model.
 	return &bash, nil
 }
 
-func (p PgBashRepository) GetAll(ctx context.Context) ([]*model.Bash, error) {
-	bashList := make([]*model.Bash, 0)
+func (p PgBashRepository) GetPaginationPage(ctx context.Context, paginationParams schema.PaginationParams) (schema.PaginationPage[*model.Bash], error) {
+	limit := paginationParams.Limit
+	offset := paginationParams.Offset
+
+	bashList := make([]*model.Bash, 0, limit)
+	bashPaginationPage := schema.PaginationPage[*model.Bash]{
+		Limit:  limit,
+		Offset: offset,
+	}
 
 	p.logger.Debug("Start getting bash list")
-	q := `
+	qItems := `
 		SELECT
 			id, title, body, created_at
 		FROM
 		    scripts.bash
+		OFFSET $1
+		LIMIT $2
+	`
+	qTotal := `
+		SELECT
+			COUNT(*) AS total
+		FROM
+		    scripts.bash
 	`
 
-	rows, err := p.db.Query(ctx, q)
+	rows, err := p.db.Query(ctx, qItems, offset, limit)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Getting bash list Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(fmt.Sprintf("Getting bash items Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
 		}
-		return nil, err
+		return bashPaginationPage, err
 	}
-
 	for rows.Next() {
 		bash := model.Bash{}
 		if err := rows.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
@@ -73,13 +88,23 @@ func (p PgBashRepository) GetAll(ctx context.Context) ([]*model.Bash, error) {
 			if errors.As(err, &pgErr) {
 				p.logger.Error(fmt.Sprintf("Getting bash Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
 			}
-			return nil, err
+			return bashPaginationPage, err
 		}
 		bashList = append(bashList, &bash)
 	}
+	bashPaginationPage.Items = bashList
+
+	row := p.db.QueryRow(ctx, qTotal)
+	if err := row.Scan(&bashPaginationPage.Total); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			p.logger.Error(fmt.Sprintf("Getting bash total Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
+		}
+		return bashPaginationPage, err
+	}
 	p.logger.Debug("Finish getting bash list")
 
-	return bashList, nil
+	return bashPaginationPage, nil
 }
 
 func (p PgBashRepository) Create(ctx context.Context, dto dto.CreateBashDTO) (*model.Bash, error) {

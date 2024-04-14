@@ -10,18 +10,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RaiseError(ctx *gin.Context, err error) {
+func RaiseError(c *gin.Context, err error) {
 	var httpErr *schema.HTTPError
 
 	logger := log.GetLogger()
 
 	if errors.As(err, &httpErr) {
-		logger.Error(fmt.Sprintf("Path: %s Error: %v", ctx.FullPath(), err))
-		ctx.JSON(httpErr.HTTPCode, httpErr)
+		logger.Error(fmt.Sprintf("Path: %s Error: %v", c.FullPath(), err))
+		c.JSON(httpErr.HTTPCode, httpErr)
 	} else {
 		httpErrors := config.GetHTTPErrors()
-		logger.Error(fmt.Sprintf("Path: %s Unknown Error: %v", ctx.FullPath(), err))
+		logger.Error(fmt.Sprintf("Path: %s Unknown Error: %v", c.FullPath(), err))
 		errors.As(httpErrors.Internal, &httpErr)
-		ctx.JSON(httpErr.HTTPCode, httpErr)
+		c.JSON(httpErr.HTTPCode, httpErr)
 	}
 }

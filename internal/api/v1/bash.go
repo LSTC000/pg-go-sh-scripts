@@ -10,6 +10,7 @@ import (
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/usecase"
+	"strconv"
 )
 
 const (
@@ -24,12 +25,12 @@ const (
 
 type (
 	IBashHandler interface {
-		GetBashById(*gin.Context)
-		GetBashFileById(*gin.Context)
-		GetBashList(*gin.Context)
-		CreateBash(*gin.Context)
-		ExecBash(*gin.Context)
-		RemoveBashById(*gin.Context)
+		GetBashById(c *gin.Context)
+		GetBashFileById(c *gin.Context)
+		GetBashList(c *gin.Context)
+		CreateBash(c *gin.Context)
+		ExecBash(c *gin.Context)
+		RemoveBashById(c *gin.Context)
 	}
 
 	BashHandler struct {
@@ -59,20 +60,20 @@ func (h *BashHandler) Register(rg *gin.RouterGroup) {
 // @Failure 500 {object} schema.HTTPError
 // @Param id path string true "ID of bash script"
 // @Router /bash/{id} [get]
-func (h *BashHandler) GetBashById(ctx *gin.Context) {
-	bashId, err := uuid.FromString(ctx.Param("id"))
+func (h *BashHandler) GetBashById(c *gin.Context) {
+	bashId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
-		api.RaiseError(ctx, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.Validate)
 		return
 	}
 
 	bash, err := h.useCase.GetBashById(bashId)
 	if err != nil {
-		api.RaiseError(ctx, err)
+		api.RaiseError(c, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, bash)
+	c.JSON(http.StatusOK, bash)
 }
 
 // GetBashFileById
@@ -84,21 +85,21 @@ func (h *BashHandler) GetBashById(ctx *gin.Context) {
 // @Failure 500 {object} schema.HTTPError
 // @Param id path string true "ID of bash script"
 // @Router /bash/{id}/file [get]
-func (h *BashHandler) GetBashFileById(ctx *gin.Context) {
-	bashId, err := uuid.FromString(ctx.Param("id"))
+func (h *BashHandler) GetBashFileById(c *gin.Context) {
+	bashId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
-		api.RaiseError(ctx, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.Validate)
 		return
 	}
 
 	bashFileBuffer, bashTitle, err := h.useCase.GetBashFileBufferById(bashId)
 	if err != nil {
-		api.RaiseError(ctx, err)
+		api.RaiseError(c, err)
 		return
 	}
 
 	extraHeaders := map[string]string{"Content-Disposition": fmt.Sprintf("attachment; filename=\"%s.sh\"", bashTitle)}
-	ctx.DataFromReader(http.StatusOK, int64(bashFileBuffer.Len()), "application/x-www-form-urlencoded", bashFileBuffer, extraHeaders)
+	c.DataFromReader(http.StatusOK, int64(bashFileBuffer.Len()), "application/x-www-form-urlencoded", bashFileBuffer, extraHeaders)
 }
 
 // GetBashList
@@ -106,18 +107,35 @@ func (h *BashHandler) GetBashFileById(ctx *gin.Context) {
 // @Tags Bash
 // @Description Get list of bash scripts
 // @Produce json
-// @Success 200 {object} schema.SwagBashPaginationLimitOffsetPage
+// @Success 200 {object} schema.SwagBashPaginationPage
 // @Failure 500 {object} schema.HTTPError
 // @Param limit query int true "Limit param of pagination"
 // @Param offset query int true "Offset param of pagination"
 // @Router /bash/list [get]
-func (h *BashHandler) GetBashList(ctx *gin.Context) {
-	bashList, err := h.useCase.GetBashList()
+func (h *BashHandler) GetBashList(c *gin.Context) {
+	var paginationParams schema.PaginationParams
+
+	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
-		api.RaiseError(ctx, err)
+		api.RaiseError(c, h.httpErrors.Validate)
 		return
 	}
-	ctx.JSON(http.StatusOK, bashList)
+	offset, err := strconv.Atoi(c.Query("offset"))
+	if err != nil {
+		api.RaiseError(c, h.httpErrors.Validate)
+		return
+	}
+
+	paginationParams.Limit = limit
+	paginationParams.Offset = offset
+
+	bashList, err := h.useCase.GetBashPaginationPage(paginationParams)
+	if err != nil {
+		api.RaiseError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, bashList)
 }
 
 // CreateBash
@@ -130,20 +148,20 @@ func (h *BashHandler) GetBashList(ctx *gin.Context) {
 // @Failure 500 {object} schema.HTTPError
 // @Param file formData file true "Bash script file"
 // @Router /bash [post]
-func (h *BashHandler) CreateBash(ctx *gin.Context) {
-	file, err := ctx.FormFile("file")
+func (h *BashHandler) CreateBash(c *gin.Context) {
+	file, err := c.FormFile("file")
 	if err != nil {
-		api.RaiseError(ctx, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.Validate)
 		return
 	}
 
 	bash, err := h.useCase.CreateBash(file)
 	if err != nil {
-		api.RaiseError(ctx, err)
+		api.RaiseError(c, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, bash)
+	c.JSON(http.StatusOK, bash)
 }
 
 // ExecBashList
@@ -157,21 +175,21 @@ func (h *BashHandler) CreateBash(ctx *gin.Context) {
 // @Param isSync query bool true "Execute type: if true, then in a multithreading, otherwise in a single thread"
 // @Param execute body []dto.ExecBashDTO true "List of execute bash script models"
 // @Router /bash/execute/list [post]
-func (h *BashHandler) ExecBashList(ctx *gin.Context) {
+func (h *BashHandler) ExecBashList(c *gin.Context) {
 	execBashDTOList := make([]dto.ExecBashDTO, 0)
 
-	isSync := ctx.GetBool("isSync")
-	if err := ctx.ShouldBindJSON(&execBashDTOList); err != nil {
-		api.RaiseError(ctx, h.httpErrors.Validate)
+	isSync := c.GetBool("isSync")
+	if err := c.ShouldBindJSON(&execBashDTOList); err != nil {
+		api.RaiseError(c, h.httpErrors.Validate)
 		return
 	}
 
 	if err := h.useCase.ExecBashList(isSync, execBashDTOList); err != nil {
-		api.RaiseError(ctx, err)
+		api.RaiseError(c, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, schema.Message{Message: "ok"})
+	c.JSON(http.StatusOK, schema.Message{Message: "ok"})
 }
 
 // RemoveBashById
@@ -183,20 +201,20 @@ func (h *BashHandler) ExecBashList(ctx *gin.Context) {
 // @Failure 500 {object} schema.HTTPError
 // @Param id path string true "ID of bash script"
 // @Router /bash/{id} [delete]
-func (h *BashHandler) RemoveBashById(ctx *gin.Context) {
-	bashId, err := uuid.FromString(ctx.Param("id"))
+func (h *BashHandler) RemoveBashById(c *gin.Context) {
+	bashId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
-		api.RaiseError(ctx, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.Validate)
 		return
 	}
 
 	bash, err := h.useCase.RemoveBashById(bashId)
 	if err != nil {
-		api.RaiseError(ctx, err)
+		api.RaiseError(c, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, bash)
+	c.JSON(http.StatusOK, bash)
 }
 
 func GetBashHandler() api.IHandler {

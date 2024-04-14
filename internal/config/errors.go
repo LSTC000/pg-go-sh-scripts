@@ -11,14 +11,14 @@ type HTTPErrors struct {
 	Internal error
 	Validate error
 	// Bash Errors
-	BashFileExtension error
-	BashFileBody      error
-	BashCreate        error
-	BashDoesNotExists error
-	BashGetFileBuffer error
-	BashGetList       error
-	BashExecute       error
-	BashRemove        error
+	BashFileExtension     error
+	BashFileBody          error
+	BashCreate            error
+	BashDoesNotExists     error
+	BashGetFileBuffer     error
+	BashGetPaginationPage error
+	BashExecute           error
+	BashRemove            error
 	// Bash Log Errors
 	BashLogGetListByBashId error
 }
@@ -61,10 +61,10 @@ func setHTTPErrors(errors *HTTPErrors) {
 		ServiceCode: 104,
 		Detail:      "Getting Bash File Buffer Error",
 	}
-	errors.BashGetList = &schema.HTTPError{
+	errors.BashGetPaginationPage = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 105,
-		Detail:      "Getting Bash List Error",
+		Detail:      "Getting Bash Pagination Page Error",
 	}
 	errors.BashExecute = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,

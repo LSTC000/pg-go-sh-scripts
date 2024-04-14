@@ -5,6 +5,7 @@ import (
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/internal/repo"
+	"pg-sh-scripts/internal/schema"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -12,7 +13,7 @@ import (
 type (
 	IBashService interface {
 		GetOneById(ctx context.Context, id uuid.UUID) (*model.Bash, error)
-		GetAll(ctx context.Context) ([]*model.Bash, error)
+		GetPaginationPage(ctx context.Context, paginationParams schema.PaginationParams) (schema.PaginationPage[*model.Bash], error)
 		Create(ctx context.Context, dto dto.CreateBashDTO) (*model.Bash, error)
 		RemoveById(ctx context.Context, id uuid.UUID) (*model.Bash, error)
 	}
@@ -30,12 +31,12 @@ func (s *BashService) GetOneById(ctx context.Context, id uuid.UUID) (*model.Bash
 	return bash, nil
 }
 
-func (s *BashService) GetAll(ctx context.Context) ([]*model.Bash, error) {
-	bashList, err := s.repository.GetAll(ctx)
+func (s *BashService) GetPaginationPage(ctx context.Context, paginationParams schema.PaginationParams) (schema.PaginationPage[*model.Bash], error) {
+	bashPaginationPage, err := s.repository.GetPaginationPage(ctx, paginationParams)
 	if err != nil {
-		return nil, err
+		return bashPaginationPage, err
 	}
-	return bashList, nil
+	return bashPaginationPage, nil
 }
 
 func (s *BashService) Create(ctx context.Context, dto dto.CreateBashDTO) (*model.Bash, error) {

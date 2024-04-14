@@ -8,21 +8,21 @@ type (
 		Offset int `json:"offset"`
 	}
 
-	PaginationLimitOffsetPage[T any] struct {
+	PaginationPage[T any] struct {
 		Items  []T `json:"items"`
 		Limit  int `json:"limit"`
 		Offset int `json:"offset"`
 		Total  int `json:"total"`
 	}
 
-	SwagBashPaginationLimitOffsetPage struct {
+	SwagBashPaginationPage struct {
 		Items  []model.Bash `json:"items"`
 		Limit  int          `json:"limit"`
 		Offset int          `json:"offset"`
 		Total  int          `json:"total"`
 	}
 
-	SwagBashLogPaginationLimitOffsetPage struct {
+	SwagBashLogPaginationPage struct {
 		Items  []model.BashLog `json:"items"`
 		Limit  int             `json:"limit"`
 		Offset int             `json:"offset"`
