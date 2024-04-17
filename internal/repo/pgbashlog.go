@@ -100,7 +100,7 @@ func (p PgBashLogRepository) Create(ctx context.Context, dto dto.CreateBashLogDT
 	`
 
 	row := p.db.QueryRow(ctx, stmt, dto.BashId, dto.Body, dto.IsError)
-	if err := row.Scan(&bashLog.Id, &bashLog.BashId, &bashLog.Body, &bashLog.CreatedAt); err != nil {
+	if err := row.Scan(&bashLog.Id, &bashLog.BashId, &bashLog.Body, &bashLog.IsError, &bashLog.CreatedAt); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			p.logger.Error(fmt.Sprintf("Creating bash log Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))

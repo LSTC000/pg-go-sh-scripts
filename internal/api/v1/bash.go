@@ -2,8 +2,6 @@ package v1
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	uuid "github.com/satori/go.uuid"
 	"net/http"
 	"pg-sh-scripts/internal/api"
 	"pg-sh-scripts/internal/config"
@@ -12,6 +10,9 @@ import (
 	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/usecase"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
 )
 
 const (

@@ -1,10 +1,11 @@
 package server
 
 import (
+	_ "pg-sh-scripts/docs"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "pg-sh-scripts/docs"
 )
 
 func setSwagger(r *gin.Engine) {
