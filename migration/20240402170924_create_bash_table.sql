@@ -13,7 +13,7 @@ ON scripts.bash (id);
 
 -- +goose Down
 -- +goose StatementBegin
-DROP INDEX IF EXISTS bash_id;
+DROP INDEX IF EXISTS scripts.bash_id;
 
 DROP TABLE IF EXISTS scripts.bash;
 -- +goose StatementEnd

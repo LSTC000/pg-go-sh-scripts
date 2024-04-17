@@ -14,7 +14,7 @@ ON scripts.bash_log (id);
 
 -- +goose Down
 -- +goose StatementBegin
-DROP INDEX IF EXISTS bash_log_id;
+DROP INDEX IF EXISTS scripts.bash_log_id;
 
 DROP TABLE IF EXISTS scripts.bash_log;
 -- +goose StatementEnd
