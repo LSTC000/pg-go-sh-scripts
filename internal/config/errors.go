@@ -10,6 +10,7 @@ type HTTPErrors struct {
 	// Base Errors
 	Internal error
 	Validate error
+
 	// Bash Errors
 	BashFileExtension     error
 	BashFileBody          error
@@ -19,9 +20,15 @@ type HTTPErrors struct {
 	BashGetPaginationPage error
 	BashExecute           error
 	BashRemove            error
+
 	// Bash Log Errors
 	BashLogGetPaginationPageByBashId error
 }
+
+var (
+	httpErrorsInstance *HTTPErrors
+	httpErrorsOnce     sync.Once
+)
 
 func setHTTPErrors(errors *HTTPErrors) {
 	// Base Errors
@@ -35,6 +42,7 @@ func setHTTPErrors(errors *HTTPErrors) {
 		ServiceCode: 1,
 		Detail:      "Validation Error",
 	}
+
 	// Bash Errors
 	errors.BashFileExtension = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
@@ -76,6 +84,7 @@ func setHTTPErrors(errors *HTTPErrors) {
 		ServiceCode: 107,
 		Detail:      "Removing Bash Error",
 	}
+
 	// Bash Log Errors
 	errors.BashLogGetPaginationPageByBashId = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
@@ -85,14 +94,13 @@ func setHTTPErrors(errors *HTTPErrors) {
 }
 
 func GetHTTPErrors() *HTTPErrors {
-	var (
-		errors HTTPErrors
-		once   sync.Once
-	)
+	httpErrorsOnce.Do(func() {
+		var httpErrors HTTPErrors
 
-	once.Do(func() {
-		setHTTPErrors(&errors)
+		setHTTPErrors(&httpErrors)
+
+		httpErrorsInstance = &httpErrors
 	})
 
-	return &errors
+	return httpErrorsInstance
 }
