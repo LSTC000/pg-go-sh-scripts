@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"pg-sh-scripts/internal/config/api"
@@ -14,46 +13,46 @@ import (
 )
 
 type Config struct {
-	Project  project.Config  `yaml:"project"`
-	Server   server.Config   `yaml:"server"`
+	Project  project.Config
+	Server   server.Config
 	Api      api.Config      `yaml:"api"`
 	Postgres postgres.Config `yaml:"postgres"`
 }
 
-func getConfigPath() string { return "./config/app/main.yaml" }
+var (
+	cfgInstance *Config
+	cfgOnce     sync.Once
+)
 
-func validateConfigPath(configPath *string) error {
-	if *configPath == "" {
-		return fmt.Errorf("empty config path")
-	}
-	if _, err := os.Stat(*configPath); os.IsNotExist(err) {
+func validateConfigPath(cfgPath string) error {
+	if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
 		return err
 	}
 	return nil
 }
 
-func setConfig(config *Config, configPath *string) error {
-	if err := cleanenv.ReadConfig(*configPath, config); err != nil {
+func setConfig(cfg *Config, cfgPath string) error {
+	if err := cleanenv.ReadConfig(cfgPath, cfg); err != nil {
 		return err
 	}
 	return nil
 }
 
 func GetConfig() *Config {
-	var (
-		config Config
-		once   sync.Once
-	)
+	cfgOnce.Do(func() {
+		var cfg Config
 
-	once.Do(func() {
-		configPath := getConfigPath()
-		if err := validateConfigPath(&configPath); err != nil {
+		cfgPath := "./config/app/main.yaml"
+
+		if err := validateConfigPath(cfgPath); err != nil {
 			log.Fatalf("Config path error: %v", err)
 		}
-		if err := setConfig(&config, &configPath); err != nil {
+		if err := setConfig(&cfg, cfgPath); err != nil {
 			log.Fatalf("Config create error: %v", err)
 		}
+
+		cfgInstance = &cfg
 	})
 
-	return &config
+	return cfgInstance
 }
