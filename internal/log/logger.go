@@ -6,19 +6,24 @@ import (
 	"sync"
 )
 
+var (
+	loggerInstance *logging.Logger
+	loggerOnce     sync.Once
+)
+
 func GetLogger() *logging.Logger {
-	var once sync.Once
+	loggerOnce.Do(func() {
+		mode := logging.ProdMode
 
-	mode := logging.ProdMode
-
-	once.Do(func() {
 		switch cfg := config.GetConfig(); cfg.Project.Mode {
 		case "local":
 			mode = logging.LocalMode
 		case "dev":
 			mode = logging.DevMode
 		}
+
+		loggerInstance = logging.GetLogger(mode)
 	})
 
-	return logging.GetLogger(mode)
+	return loggerInstance
 }
