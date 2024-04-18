@@ -7,16 +7,16 @@ import (
 	"sync"
 )
 
+var (
+	pgInstance postgres.IClient
+	pgConnErr  error
+	pgOnce     sync.Once
+)
+
 func GetPgClient() (postgres.IClient, error) {
-	var (
-		pgClient postgres.IClient
-		connErr  error
-		once     sync.Once
-	)
+	pgOnce.Do(func() {
+		cfg := config.GetConfig()
 
-	cfg := config.GetConfig()
-
-	once.Do(func() {
 		connConfig := postgres.ConnConfig{
 			Database:          cfg.Postgres.Database,
 			Username:          cfg.Postgres.Username,
@@ -29,15 +29,15 @@ func GetPgClient() (postgres.IClient, error) {
 
 		client, err := postgres.GetClient(context.Background(), &connConfig)
 		if err != nil {
-			connErr = err
+			pgConnErr = err
 			return
 		}
-		pgClient = client
+		pgInstance = client
 	})
 
-	if connErr != nil {
-		return nil, connErr
+	if pgConnErr != nil {
+		return nil, pgConnErr
 	}
 
-	return pgClient, nil
+	return pgInstance, nil
 }
