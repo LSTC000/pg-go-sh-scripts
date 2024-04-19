@@ -13,7 +13,7 @@ definitions:
       body:
         type: string
       createdAt:
-        example: "2024-04-14T15:50:21.907561+07:00"
+        example: "2024-04-14T15:50:21.907561+00:00"
         type: string
       id:
         example: 59628b82-356c-4745-bc81-187015cde387
@@ -29,7 +29,7 @@ definitions:
       body:
         type: string
       createdAt:
-        example: "2024-04-14T15:50:21.907561+07:00"
+        example: "2024-04-14T15:50:21.907561+00:00"
         type: string
       id:
         example: f4f4d096-ef4a-4649-8346-a952e2ca27d3

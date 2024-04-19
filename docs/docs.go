@@ -323,7 +323,7 @@ const docTemplate = `{
                 },
                 "createdAt": {
                     "type": "string",
-                    "example": "2024-04-14T15:50:21.907561+07:00"
+                    "example": "2024-04-14T15:50:21.907561+00:00"
                 },
                 "id": {
                     "type": "string",
@@ -346,7 +346,7 @@ const docTemplate = `{
                 },
                 "createdAt": {
                     "type": "string",
-                    "example": "2024-04-14T15:50:21.907561+07:00"
+                    "example": "2024-04-14T15:50:21.907561+00:00"
                 },
                 "id": {
                     "type": "string",
