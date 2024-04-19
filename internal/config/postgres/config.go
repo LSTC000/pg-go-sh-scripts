@@ -8,7 +8,6 @@ type Config struct {
 	Password          string        `yaml:"password" env:"POSTGRES_PASSWORD" env-required:"true"`
 	Host              string        `yaml:"host" env:"POSTGRES_HOST" env-required:"true"`
 	Port              string        `yaml:"port" env:"POSTGRES_PORT" env-required:"true"`
-	Timezone          string        `yaml:"timezone" env:"TZ" env-required:"true"`
 	RetryCount        int           `yaml:"retryCount"`
 	RetrySleepSeconds time.Duration `yaml:"retrySleepSeconds"`
 }
