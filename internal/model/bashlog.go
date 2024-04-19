@@ -11,5 +11,5 @@ type BashLog struct {
 	BashId    uuid.UUID `json:"bashId" swaggertype:"primitive,string" example:"59628b82-356c-4745-bc81-187015cde387"`
 	Body      string    `json:"body"`
 	IsError   bool      `json:"isError"`
-	CreatedAt time.Time `json:"createdAt" example:"2024-04-14T15:50:21.907561+07:00"`
+	CreatedAt time.Time `json:"createdAt" example:"2024-04-14T15:50:21.907561+00:00"`
 }
