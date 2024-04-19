@@ -28,48 +28,36 @@ type (
 	CustomScanner struct{}
 )
 
+func (c *CustomGoshaExec) saveExecError(err error) {
+	var execErr *gosha.ExecErr
+
+	bashLogService := service.GetBashLogService()
+
+	if errors.As(err, &execErr) {
+		bashId, err := uuid.FromString(execErr.Title)
+		if err == nil {
+			createBashLogDTO := dto.CreateBashLogDTO{
+				BashId:  bashId,
+				Body:    execErr.Detail,
+				IsError: true,
+			}
+			_, _ = bashLogService.Create(context.Background(), createBashLogDTO)
+		}
+	} else {
+		c.logger.Error("Unknown execute error: &v", err)
+	}
+}
+
 func (c *CustomGoshaExec) Run() {
 	if c.isSync {
 		if errs := c.goshaExec.SyncRun(); errs != nil {
-			var execErr *gosha.ExecErr
-
-			bashLogService := service.GetBashLogService()
-
 			for _, err := range errs {
-				if errors.As(err, &execErr) {
-					bashId, err := uuid.FromString(execErr.Title)
-					if err == nil {
-						createBashLogDTO := dto.CreateBashLogDTO{
-							BashId:  bashId,
-							Body:    execErr.Detail,
-							IsError: true,
-						}
-						_, _ = bashLogService.Create(context.Background(), createBashLogDTO)
-					}
-				} else {
-					c.logger.Error("Unknown execute error: &v", err)
-				}
+				c.saveExecError(err)
 			}
 		}
 	} else {
 		if err := c.goshaExec.Run(); err != nil {
-			var execErr *gosha.ExecErr
-
-			bashLogService := service.GetBashLogService()
-
-			if errors.As(err, &execErr) {
-				bashId, err := uuid.FromString(execErr.Title)
-				if err == nil {
-					createBashLogDTO := dto.CreateBashLogDTO{
-						BashId:  bashId,
-						Body:    execErr.Detail,
-						IsError: true,
-					}
-					_, _ = bashLogService.Create(context.Background(), createBashLogDTO)
-				}
-			} else {
-				c.logger.Error("Unknown execute error: &v", err)
-			}
+			c.saveExecError(err)
 		}
 	}
 }
