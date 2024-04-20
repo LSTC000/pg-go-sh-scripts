@@ -8,8 +8,8 @@ import (
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/model"
-	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/pkg/logging"
+	"pg-sh-scripts/pkg/sql/pagination"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -47,62 +47,28 @@ func (p PgBashRepository) GetOneById(ctx context.Context, id uuid.UUID) (*model.
 	return &bash, nil
 }
 
-func (p PgBashRepository) GetPaginationPage(ctx context.Context, paginationParams schema.PaginationParams) (schema.PaginationPage[*model.Bash], error) {
-	limit := paginationParams.Limit
-	offset := paginationParams.Offset
+func (p PgBashRepository) GetPaginationPage(ctx context.Context, paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.Bash], error) {
+	var bashPaginationPage pagination.LimitOffsetPage[*model.Bash]
 
-	bashList := make([]*model.Bash, 0, limit)
-	bashPaginationPage := schema.PaginationPage[*model.Bash]{
-		Limit:  limit,
-		Offset: offset,
-	}
-
-	p.logger.Debug("Start getting bash list")
-	qItems := `
+	p.logger.Debug("Start getting bash pagination page")
+	q := `
 		SELECT
 			id, title, body, created_at
 		FROM
 		    scripts.bash
-		OFFSET $1
-		LIMIT $2
-	`
-	qTotal := `
-		SELECT
-			COUNT(*) AS total
-		FROM
-		    scripts.bash
 	`
 
-	rows, err := p.db.Query(ctx, qItems, offset, limit)
+	bashPaginationPage, err := pagination.Paginate[*model.Bash](ctx, p.db, q, paginationParams)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Getting bash items Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(fmt.Sprintf("Getting bash pagination page Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
+		} else {
+			p.logger.Error(fmt.Sprintf("Getting bash pagination page Error: %s", err))
 		}
 		return bashPaginationPage, err
 	}
-	for rows.Next() {
-		bash := model.Bash{}
-		if err := rows.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
-			var pgErr *pgconn.PgError
-			if errors.As(err, &pgErr) {
-				p.logger.Error(fmt.Sprintf("Getting bash Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
-			}
-			return bashPaginationPage, err
-		}
-		bashList = append(bashList, &bash)
-	}
-	bashPaginationPage.Items = bashList
-
-	row := p.db.QueryRow(ctx, qTotal)
-	if err := row.Scan(&bashPaginationPage.Total); err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Getting bash total Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
-		}
-		return bashPaginationPage, err
-	}
-	p.logger.Debug("Finish getting bash list")
+	p.logger.Debug("Finish getting bash pagination page")
 
 	return bashPaginationPage, nil
 }
