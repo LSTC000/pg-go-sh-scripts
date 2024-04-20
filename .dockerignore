@@ -1,7 +1,6 @@
 .idea
 .env.local
 build
-docs
 .gitignore
 Makefile
 changelog.md

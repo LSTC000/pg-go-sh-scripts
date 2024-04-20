@@ -10,23 +10,25 @@ RUN apk update --no-cache
 
 WORKDIR /builder
 
-ADD go.mod .
+COPY go.mod .
 
-ADD go.sum .
+COPY go.sum .
 
 RUN go mod download
 
 COPY . .
 
-RUN go build -ldflags="-s -w" -C ./cmd/app -o ../../build/app/main
+RUN go build -C ./cmd/app -o ../../build/app/main -ldflags="-s -w"
 
 FROM alpine:3.19.1
 
 LABEL stage=apprunner
 
-RUN apk update --no-cache && apk add --no-cache ca-certificates
+RUN apk update --no-cache && apk add --no-cache ca-certificates && apk add --no-cache --upgrade bash
 
 WORKDIR /build
+
+COPY . .
 
 COPY --from=builder /builder/build/app/main /build
 
