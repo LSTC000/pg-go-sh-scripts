@@ -9,11 +9,11 @@ import (
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/model"
-	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/service"
 	"pg-sh-scripts/internal/type/alias"
 	"pg-sh-scripts/internal/util"
 	"pg-sh-scripts/pkg/gosha"
+	"pg-sh-scripts/pkg/sql/pagination"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -23,7 +23,7 @@ type (
 	IBashUseCase interface {
 		GetBashById(bashId uuid.UUID) (*model.Bash, error)
 		GetBashFileBufferById(bashId uuid.UUID) (*bytes.Buffer, alias.BashTitle, error)
-		GetBashPaginationPage(paginationParams schema.PaginationParams) (schema.PaginationPage[*model.Bash], error)
+		GetBashPaginationPage(paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.Bash], error)
 		CreateBash(file *multipart.FileHeader) (*model.Bash, error)
 		ExecBashList(isSync bool, dto []dto.ExecBashDTO) error
 		RemoveBashById(bashId uuid.UUID) (*model.Bash, error)
@@ -57,7 +57,7 @@ func (u *BashUseCase) GetBashFileBufferById(bashId uuid.UUID) (*bytes.Buffer, al
 	return bashFileBuffer, bash.Title, nil
 }
 
-func (u *BashUseCase) GetBashPaginationPage(paginationParams schema.PaginationParams) (schema.PaginationPage[*model.Bash], error) {
+func (u *BashUseCase) GetBashPaginationPage(paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.Bash], error) {
 	bashPaginationPage, err := u.service.GetPaginationPage(context.Background(), paginationParams)
 	if err != nil {
 		return bashPaginationPage, u.httpErrors.BashGetPaginationPage
