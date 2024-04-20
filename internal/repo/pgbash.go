@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"pg-sh-scripts/internal/db"
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/log"
@@ -22,9 +23,9 @@ type PgBashRepository struct {
 }
 
 func (p PgBashRepository) GetOneById(ctx context.Context, id uuid.UUID) (*model.Bash, error) {
-	bash := model.Bash{}
+	bash := &model.Bash{}
 
-	p.logger.Debug(fmt.Sprintf("Start getting bash by id: %s", id))
+	p.logger.Debug(fmt.Sprintf("Start getting bash by id: %v", id))
 	q := `
 		SELECT
 			id, title, body, created_at
@@ -34,17 +35,18 @@ func (p PgBashRepository) GetOneById(ctx context.Context, id uuid.UUID) (*model.
 			id = $1
 	`
 
-	row := p.db.QueryRow(ctx, q, id)
-	if err := row.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
+	if err := pgxscan.Get(ctx, p.db, bash, q, id); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Getting bash Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(fmt.Sprintf("Getting bash by id: %v Error: %s, Detail: %s, Where: %s", id, pgErr.Message, pgErr.Detail, pgErr.Where))
+		} else {
+			p.logger.Error(fmt.Sprintf("Getting bash by id: %v Error: %s", id, err))
 		}
-		return nil, err
+		return bash, err
 	}
-	p.logger.Debug(fmt.Sprintf("Finish getting bash by id: %s", id))
+	p.logger.Debug(fmt.Sprintf("Finish getting bash by id: %v", id))
 
-	return &bash, nil
+	return bash, nil
 }
 
 func (p PgBashRepository) GetPaginationPage(ctx context.Context, paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.Bash], error) {
@@ -74,7 +76,7 @@ func (p PgBashRepository) GetPaginationPage(ctx context.Context, paginationParam
 }
 
 func (p PgBashRepository) Create(ctx context.Context, dto dto.CreateBashDTO) (*model.Bash, error) {
-	bash := model.Bash{}
+	bash := &model.Bash{}
 
 	p.logger.Debug(fmt.Sprintf("Start creating bash with title: %s", dto.Title))
 	stmt := `
@@ -85,23 +87,24 @@ func (p PgBashRepository) Create(ctx context.Context, dto dto.CreateBashDTO) (*m
 		RETURNING id, title, body, created_at
 	`
 
-	row := p.db.QueryRow(ctx, stmt, dto.Title, dto.Body)
-	if err := row.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
+	if err := pgxscan.Get(ctx, p.db, bash, stmt, dto.Title, dto.Body); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Creating bash Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(fmt.Sprintf("Creating bash with title: %s Error: %s, Detail: %s, Where: %s", dto.Title, pgErr.Message, pgErr.Detail, pgErr.Where))
+		} else {
+			p.logger.Error(fmt.Sprintf("Creating bash with title: %s Error: %s", dto.Title, err))
 		}
-		return nil, err
+		return bash, err
 	}
 	p.logger.Debug(fmt.Sprintf("Finish creating bash with title: %s", dto.Title))
 
-	return &bash, nil
+	return bash, nil
 }
 
 func (p PgBashRepository) RemoveById(ctx context.Context, id uuid.UUID) (*model.Bash, error) {
-	bash := model.Bash{}
+	bash := &model.Bash{}
 
-	p.logger.Debug(fmt.Sprintf("Start removing bash with id: %s", id))
+	p.logger.Debug(fmt.Sprintf("Start removing bash by id: %v", id))
 	stmt := `
 		DELETE FROM 
 		    scripts.bash
@@ -110,17 +113,18 @@ func (p PgBashRepository) RemoveById(ctx context.Context, id uuid.UUID) (*model.
 		RETURNING id, title, body, created_at
 	`
 
-	row := p.db.QueryRow(ctx, stmt, id)
-	if err := row.Scan(&bash.Id, &bash.Title, &bash.Body, &bash.CreatedAt); err != nil {
+	if err := pgxscan.Get(ctx, p.db, bash, stmt, id); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Removing bash Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(fmt.Sprintf("Removing bash by id: %v Error: %s, Detail: %s, Where: %s", id, pgErr.Message, pgErr.Detail, pgErr.Where))
+		} else {
+			p.logger.Error(fmt.Sprintf("Removing bash by id: %v Error: %s", id, err))
 		}
-		return nil, err
+		return bash, err
 	}
-	p.logger.Debug(fmt.Sprintf("Finish removing bash with id: %s", id))
+	p.logger.Debug(fmt.Sprintf("Finish removing bash by id: %v", id))
 
-	return &bash, nil
+	return bash, nil
 }
 
 func GetPgBashRepository() IBashRepository {
