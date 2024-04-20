@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"pg-sh-scripts/internal/api"
 	"pg-sh-scripts/internal/config"
-	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/usecase"
+	"pg-sh-scripts/pkg/sql/pagination"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -47,8 +47,6 @@ func (h *BashLogHandler) Register(rg *gin.RouterGroup) {
 // @Param offset query int true "Offset param of pagination" default(0)
 // @Router /bash/log/{bashId}/list [get]
 func (h *BashLogHandler) GetBashLogListByBashId(c *gin.Context) {
-	var paginationParams schema.PaginationParams
-
 	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
 		api.RaiseError(c, h.httpErrors.Validate)
@@ -66,8 +64,10 @@ func (h *BashLogHandler) GetBashLogListByBashId(c *gin.Context) {
 		return
 	}
 
-	paginationParams.Limit = limit
-	paginationParams.Offset = offset
+	paginationParams := pagination.LimitOffsetParams{
+		Limit:  limit,
+		Offset: offset,
+	}
 
 	bashLogList, err := h.useCase.GetBashLogPaginationPageByBashId(bashId, paginationParams)
 	if err != nil {

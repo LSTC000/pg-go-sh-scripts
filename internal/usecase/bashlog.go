@@ -4,15 +4,15 @@ import (
 	"context"
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/model"
-	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/service"
+	"pg-sh-scripts/pkg/sql/pagination"
 
 	uuid "github.com/satori/go.uuid"
 )
 
 type (
 	IBashLogUseCase interface {
-		GetBashLogPaginationPageByBashId(bashId uuid.UUID, paginationParams schema.PaginationParams) (schema.PaginationPage[*model.BashLog], error)
+		GetBashLogPaginationPageByBashId(bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.BashLog], error)
 	}
 
 	BashLogUseCase struct {
@@ -21,8 +21,8 @@ type (
 	}
 )
 
-func (u *BashLogUseCase) GetBashLogPaginationPageByBashId(bashId uuid.UUID, paginationParams schema.PaginationParams) (schema.PaginationPage[*model.BashLog], error) {
-	var bashLogPaginationPage schema.PaginationPage[*model.BashLog]
+func (u *BashLogUseCase) GetBashLogPaginationPageByBashId(bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.BashLog], error) {
+	var bashLogPaginationPage pagination.LimitOffsetPage[*model.BashLog]
 
 	bashService := service.GetBashService()
 	_, err := bashService.GetOneById(context.Background(), bashId)
