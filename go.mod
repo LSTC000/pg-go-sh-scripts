@@ -3,6 +3,7 @@ module pg-sh-scripts
 go 1.22.0
 
 require (
+	github.com/georgysavva/scany/v2 v2.1.3
 	github.com/gin-gonic/gin v1.9.1
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.5.5
