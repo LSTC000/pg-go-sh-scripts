@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"pg-sh-scripts/internal/db"
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/pkg/logging"
 	"pg-sh-scripts/pkg/sql/pagination"
+
+	"github.com/georgysavva/scany/v2/pgxscan"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
