@@ -30,9 +30,9 @@ func GetPgClient() (postgres.IClient, error) {
 		client, err := postgres.GetClient(context.Background(), &connConfig)
 		if err != nil {
 			pgConnErr = err
-			return
+		} else {
+			pgInstance = client
 		}
-		pgInstance = client
 	})
 
 	if pgConnErr != nil {
