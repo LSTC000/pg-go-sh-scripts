@@ -11,6 +11,8 @@ import (
 	"pg-sh-scripts/pkg/logging"
 	"pg-sh-scripts/pkg/sql/pagination"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
+
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -51,9 +53,9 @@ func (p PgBashLogRepository) GetPaginationPageByBashId(ctx context.Context, bash
 }
 
 func (p PgBashLogRepository) Create(ctx context.Context, dto dto.CreateBashLogDTO) (*model.BashLog, error) {
-	bashLog := model.BashLog{}
+	bashLog := &model.BashLog{}
 
-	p.logger.Debug(fmt.Sprintf("Start creating bash log for bash with id: %v", dto.BashId))
+	p.logger.Debug(fmt.Sprintf("Start creating bash log by bash id: %v", dto.BashId))
 	stmt := `
 		INSERT INTO scripts.bash_log
 			(bash_id, body, is_error)
@@ -62,17 +64,18 @@ func (p PgBashLogRepository) Create(ctx context.Context, dto dto.CreateBashLogDT
 		RETURNING id, bash_id, body, is_error, created_at
 	`
 
-	row := p.db.QueryRow(ctx, stmt, dto.BashId, dto.Body, dto.IsError)
-	if err := row.Scan(&bashLog.Id, &bashLog.BashId, &bashLog.Body, &bashLog.IsError, &bashLog.CreatedAt); err != nil {
+	if err := pgxscan.Get(ctx, p.db, bashLog, stmt, dto.BashId, dto.Body, dto.IsError); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Creating bash log Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(fmt.Sprintf("Creating bash log by bash id: %v Error: %s, Detail: %s, Where: %s", dto.BashId, pgErr.Message, pgErr.Detail, pgErr.Where))
+		} else {
+			p.logger.Error(fmt.Sprintf("Creating bash log by bash id: %v Error: %s", dto.BashId, err))
 		}
-		return nil, err
+		return bashLog, err
 	}
-	p.logger.Debug(fmt.Sprintf("Finish creating bash log for bash with id: %v", dto.BashId))
+	p.logger.Debug(fmt.Sprintf("Finish creating bash log by bash id: %v", dto.BashId))
 
-	return &bashLog, nil
+	return bashLog, nil
 }
 
 func GetPgBashLogRepository() IBashLogRepository {
