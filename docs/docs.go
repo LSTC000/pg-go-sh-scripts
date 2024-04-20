@@ -135,7 +135,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/schema.SwagBashPaginationPage"
+                            "$ref": "#/definitions/schema.BashPaginationPage"
                         }
                     },
                     "500": {
@@ -186,7 +186,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/schema.SwagBashLogPaginationPage"
+                            "$ref": "#/definitions/schema.BashLogPaginationPage"
                         }
                     },
                     "500": {
@@ -357,29 +357,7 @@ const docTemplate = `{
                 }
             }
         },
-        "schema.HTTPError": {
-            "type": "object",
-            "properties": {
-                "detail": {
-                    "type": "string"
-                },
-                "httpCode": {
-                    "type": "integer"
-                },
-                "serviceCode": {
-                    "type": "integer"
-                }
-            }
-        },
-        "schema.Message": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "schema.SwagBashLogPaginationPage": {
+        "schema.BashLogPaginationPage": {
             "type": "object",
             "properties": {
                 "items": {
@@ -399,7 +377,7 @@ const docTemplate = `{
                 }
             }
         },
-        "schema.SwagBashPaginationPage": {
+        "schema.BashPaginationPage": {
             "type": "object",
             "properties": {
                 "items": {
@@ -416,6 +394,28 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "schema.HTTPError": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "httpCode": {
+                    "type": "integer"
+                },
+                "serviceCode": {
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.Message": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
                 }
             }
         }

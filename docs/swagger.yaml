@@ -37,6 +37,32 @@ definitions:
       isError:
         type: boolean
     type: object
+  schema.BashLogPaginationPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/model.BashLog'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  schema.BashPaginationPage:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/model.Bash'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
   schema.HTTPError:
     properties:
       detail:
@@ -50,32 +76,6 @@ definitions:
     properties:
       message:
         type: string
-    type: object
-  schema.SwagBashLogPaginationPage:
-    properties:
-      items:
-        items:
-          $ref: '#/definitions/model.BashLog'
-        type: array
-      limit:
-        type: integer
-      offset:
-        type: integer
-      total:
-        type: integer
-    type: object
-  schema.SwagBashPaginationPage:
-    properties:
-      items:
-        items:
-          $ref: '#/definitions/model.Bash'
-        type: array
-      limit:
-        type: integer
-      offset:
-        type: integer
-      total:
-        type: integer
     type: object
 host: 0.0.0.0:8000
 info:
@@ -233,7 +233,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/schema.SwagBashPaginationPage'
+            $ref: '#/definitions/schema.BashPaginationPage'
         "500":
           description: Internal Server Error
           schema:
@@ -268,7 +268,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/schema.SwagBashLogPaginationPage'
+            $ref: '#/definitions/schema.BashLogPaginationPage'
         "500":
           description: Internal Server Error
           schema:

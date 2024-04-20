@@ -110,7 +110,7 @@ func (h *BashHandler) GetBashFileById(c *gin.Context) {
 // @Tags Bash
 // @Description Get list of bash scripts
 // @Produce json
-// @Success 200 {object} schema.SwagBashPaginationPage
+// @Success 200 {object} schema.BashPaginationPage
 // @Failure 500 {object} schema.HTTPError
 // @Param limit query int true "Limit param of pagination" default(20)
 // @Param offset query int true "Offset param of pagination" default(0)

@@ -40,7 +40,7 @@ func (h *BashLogHandler) Register(rg *gin.RouterGroup) {
 // @Tags Bash Log
 // @Description Get list of bash logs by bash id
 // @Produce json
-// @Success 200 {object} schema.SwagBashLogPaginationPage
+// @Success 200 {object} schema.BashLogPaginationPage
 // @Failure 500 {object} schema.HTTPError
 // @Param bashId path string true "ID of bash script"
 // @Param limit query int true "Limit param of pagination" default(20)
