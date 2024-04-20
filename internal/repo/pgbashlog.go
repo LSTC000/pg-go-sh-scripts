@@ -52,7 +52,7 @@ func (p PgBashLogRepository) GetPaginationPageByBashId(ctx context.Context, bash
 	return bashLogPaginationPage, nil
 }
 
-func (p PgBashLogRepository) Create(ctx context.Context, dto dto.CreateBashLogDTO) (*model.BashLog, error) {
+func (p PgBashLogRepository) Create(ctx context.Context, dto dto.CreateBashLog) (*model.BashLog, error) {
 	bashLog := &model.BashLog{}
 
 	p.logger.Debug(fmt.Sprintf("Start creating bash log by bash id: %v", dto.BashId))

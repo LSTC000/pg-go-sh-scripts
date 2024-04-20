@@ -176,16 +176,16 @@ func (h *BashHandler) CreateBash(c *gin.Context) {
 // @Success 200 {object} schema.Message
 // @Failure 500 {object} schema.HTTPError
 // @Param isSync query bool true "Execute type: if true, then in a multithreading, otherwise in a single thread"
-// @Param execute body []dto.ExecBashDTO true "List of execute bash script models"
+// @Param execute body []dto.ExecBash true "List of execute bash script models"
 // @Router /bash/execute/list [post]
 func (h *BashHandler) ExecBashList(c *gin.Context) {
-	execBashDTOList := make([]dto.ExecBashDTO, 0)
-
 	isSync, err := strconv.ParseBool(c.Query("isSync"))
 	if err != nil {
 		api.RaiseError(c, h.httpErrors.Validate)
 		return
 	}
+
+	execBashDTOList := make([]dto.ExecBash, 0)
 
 	if err := c.ShouldBindJSON(&execBashDTOList); err != nil {
 		api.RaiseError(c, h.httpErrors.Validate)

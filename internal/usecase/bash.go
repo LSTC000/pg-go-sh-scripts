@@ -25,7 +25,7 @@ type (
 		GetBashFileBufferById(bashId uuid.UUID) (*bytes.Buffer, alias.BashTitle, error)
 		GetBashPaginationPage(paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.Bash], error)
 		CreateBash(file *multipart.FileHeader) (*model.Bash, error)
-		ExecBashList(isSync bool, dto []dto.ExecBashDTO) error
+		ExecBashList(isSync bool, dto []dto.ExecBash) error
 		RemoveBashById(bashId uuid.UUID) (*model.Bash, error)
 	}
 
@@ -79,7 +79,7 @@ func (u *BashUseCase) CreateBash(file *multipart.FileHeader) (*model.Bash, error
 		return nil, u.httpErrors.BashFileBody
 	}
 
-	createBashDTO := dto.CreateBashDTO{Title: fileTitle, Body: fileBody}
+	createBashDTO := dto.CreateBash{Title: fileTitle, Body: fileBody}
 	bash, err := u.service.Create(context.Background(), createBashDTO)
 	if err != nil {
 		return nil, u.httpErrors.BashCreate
@@ -88,7 +88,7 @@ func (u *BashUseCase) CreateBash(file *multipart.FileHeader) (*model.Bash, error
 	return bash, nil
 }
 
-func (u *BashUseCase) ExecBashList(isSync bool, dto []dto.ExecBashDTO) error {
+func (u *BashUseCase) ExecBashList(isSync bool, dto []dto.ExecBash) error {
 	execBashCount := len(dto)
 	bashList := make([]*model.Bash, 0, execBashCount)
 

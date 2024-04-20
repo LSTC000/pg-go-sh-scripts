@@ -82,7 +82,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.ExecBashDTO"
+                                "$ref": "#/definitions/dto.ExecBash"
                             }
                         }
                     }
@@ -303,7 +303,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.ExecBashDTO": {
+        "dto.ExecBash": {
             "type": "object",
             "properties": {
                 "id": {

@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  dto.ExecBashDTO:
+  dto.ExecBash:
     properties:
       id:
         example: 59628b82-356c-4745-bc81-187015cde387
@@ -195,7 +195,7 @@ paths:
         required: true
         schema:
           items:
-            $ref: '#/definitions/dto.ExecBashDTO'
+            $ref: '#/definitions/dto.ExecBash'
           type: array
       produces:
       - application/json

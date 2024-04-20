@@ -36,7 +36,7 @@ func (c *CustomGoshaExec) saveExecError(err error) {
 	if errors.As(err, &execErr) {
 		bashId, err := uuid.FromString(execErr.Title)
 		if err == nil {
-			createBashLogDTO := dto.CreateBashLogDTO{
+			createBashLogDTO := dto.CreateBashLog{
 				BashId:  bashId,
 				Body:    execErr.Detail,
 				IsError: true,
@@ -74,7 +74,7 @@ func (s *CustomScanner) Scan(stdout io.ReadCloser, cmd gosha.Cmd) error {
 	scanner.Split(bufio.ScanWords)
 	for scanner.Scan() {
 		msg := scanner.Text()
-		createBashLogDTO := dto.CreateBashLogDTO{
+		createBashLogDTO := dto.CreateBashLog{
 			BashId:  bashId,
 			Body:    msg,
 			IsError: false,

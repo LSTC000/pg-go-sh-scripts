@@ -76,7 +76,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.ExecBashDTO"
+                                "$ref": "#/definitions/dto.ExecBash"
                             }
                         }
                     }
@@ -297,7 +297,7 @@
         }
     },
     "definitions": {
-        "dto.ExecBashDTO": {
+        "dto.ExecBash": {
             "type": "object",
             "properties": {
                 "id": {

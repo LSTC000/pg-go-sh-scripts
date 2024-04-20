@@ -14,7 +14,7 @@ type (
 	IBashService interface {
 		GetOneById(ctx context.Context, id uuid.UUID) (*model.Bash, error)
 		GetPaginationPage(ctx context.Context, paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.Bash], error)
-		Create(ctx context.Context, dto dto.CreateBashDTO) (*model.Bash, error)
+		Create(ctx context.Context, dto dto.CreateBash) (*model.Bash, error)
 		RemoveById(ctx context.Context, id uuid.UUID) (*model.Bash, error)
 	}
 
@@ -39,7 +39,7 @@ func (s *BashService) GetPaginationPage(ctx context.Context, paginationParams pa
 	return bashPaginationPage, nil
 }
 
-func (s *BashService) Create(ctx context.Context, dto dto.CreateBashDTO) (*model.Bash, error) {
+func (s *BashService) Create(ctx context.Context, dto dto.CreateBash) (*model.Bash, error) {
 	bash, err := s.repository.Create(ctx, dto)
 	if err != nil {
 		return nil, err

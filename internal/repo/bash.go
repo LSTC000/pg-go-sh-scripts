@@ -12,6 +12,6 @@ import (
 type IBashRepository interface {
 	GetOneById(ctx context.Context, id uuid.UUID) (*model.Bash, error)
 	GetPaginationPage(ctx context.Context, paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.Bash], error)
-	Create(ctx context.Context, dto dto.CreateBashDTO) (*model.Bash, error)
+	Create(ctx context.Context, dto dto.CreateBash) (*model.Bash, error)
 	RemoveById(ctx context.Context, id uuid.UUID) (*model.Bash, error)
 }

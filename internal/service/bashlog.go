@@ -13,7 +13,7 @@ import (
 type (
 	IBashLogService interface {
 		GetPaginationPageByBashId(ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.BashLog], error)
-		Create(ctx context.Context, dto dto.CreateBashLogDTO) (*model.BashLog, error)
+		Create(ctx context.Context, dto dto.CreateBashLog) (*model.BashLog, error)
 	}
 
 	BashLogService struct {
@@ -29,7 +29,7 @@ func (s *BashLogService) GetPaginationPageByBashId(ctx context.Context, bashId u
 	return bashLogPaginationPage, nil
 }
 
-func (s *BashLogService) Create(ctx context.Context, dto dto.CreateBashLogDTO) (*model.BashLog, error) {
+func (s *BashLogService) Create(ctx context.Context, dto dto.CreateBashLog) (*model.BashLog, error) {
 	bashLog, err := s.repository.Create(ctx, dto)
 	if err != nil {
 		return nil, err

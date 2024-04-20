@@ -76,7 +76,7 @@ func (p PgBashRepository) GetPaginationPage(ctx context.Context, paginationParam
 	return bashPaginationPage, nil
 }
 
-func (p PgBashRepository) Create(ctx context.Context, dto dto.CreateBashDTO) (*model.Bash, error) {
+func (p PgBashRepository) Create(ctx context.Context, dto dto.CreateBash) (*model.Bash, error) {
 	bash := &model.Bash{}
 
 	p.logger.Debug(fmt.Sprintf("Start creating bash with title: %s", dto.Title))
