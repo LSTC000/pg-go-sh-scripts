@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"pg-sh-scripts/internal/config"
-	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/internal/service"
 	"pg-sh-scripts/internal/type/alias"
 	"pg-sh-scripts/pkg/sql/pagination"
@@ -23,7 +22,7 @@ type (
 )
 
 func (u *BashLogUseCase) GetBashLogPaginationPageByBashId(bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (alias.BashLogLimitOffsetPage, error) {
-	var bashLogPaginationPage pagination.LimitOffsetPage[*model.BashLog]
+	var bashLogPaginationPage alias.BashLogLimitOffsetPage
 
 	bashService := service.GetBashService()
 	_, err := bashService.GetOneById(context.Background(), bashId)

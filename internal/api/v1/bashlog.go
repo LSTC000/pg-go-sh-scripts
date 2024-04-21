@@ -47,20 +47,29 @@ func (h *BashLogHandler) Register(rg *gin.RouterGroup) {
 // @Param offset query int true "Offset param of pagination" default(0)
 // @Router /bash/log/{bashId}/list [get]
 func (h *BashLogHandler) GetBashLogListByBashId(c *gin.Context) {
-	limit, err := strconv.Atoi(c.Query("limit"))
+	bashId, err := uuid.FromString(c.Param("bashId"))
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
-		return
-	}
-	offset, err := strconv.Atoi(c.Query("offset"))
-	if err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.BashId)
 		return
 	}
 
-	bashId, err := uuid.FromString(c.Param("bashId"))
+	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.PaginationLimitParamMustBeInt)
+		return
+	}
+	if limit < 0 {
+		api.RaiseError(c, h.httpErrors.PaginationLimitParamGTEZero)
+		return
+	}
+
+	offset, err := strconv.Atoi(c.Query("offset"))
+	if err != nil {
+		api.RaiseError(c, h.httpErrors.PaginationOffsetParamMustBeInt)
+		return
+	}
+	if offset < 0 {
+		api.RaiseError(c, h.httpErrors.PaginationOffsetParamGTEZero)
 		return
 	}
 

@@ -66,7 +66,7 @@ func (h *BashHandler) Register(rg *gin.RouterGroup) {
 func (h *BashHandler) GetBashById(c *gin.Context) {
 	bashId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.BashId)
 		return
 	}
 
@@ -91,7 +91,7 @@ func (h *BashHandler) GetBashById(c *gin.Context) {
 func (h *BashHandler) GetBashFileById(c *gin.Context) {
 	bashId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.BashId)
 		return
 	}
 
@@ -118,12 +118,21 @@ func (h *BashHandler) GetBashFileById(c *gin.Context) {
 func (h *BashHandler) GetBashList(c *gin.Context) {
 	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.PaginationLimitParamMustBeInt)
 		return
 	}
+	if limit < 0 {
+		api.RaiseError(c, h.httpErrors.PaginationLimitParamGTEZero)
+		return
+	}
+
 	offset, err := strconv.Atoi(c.Query("offset"))
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.PaginationOffsetParamMustBeInt)
+		return
+	}
+	if offset < 0 {
+		api.RaiseError(c, h.httpErrors.PaginationOffsetParamGTEZero)
 		return
 	}
 
@@ -154,7 +163,7 @@ func (h *BashHandler) GetBashList(c *gin.Context) {
 func (h *BashHandler) CreateBash(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.BashFileUpload)
 		return
 	}
 
@@ -179,16 +188,12 @@ func (h *BashHandler) CreateBash(c *gin.Context) {
 // @Param execute body []dto.ExecBash true "List of execute bash script models"
 // @Router /bash/execute/list [post]
 func (h *BashHandler) ExecBashList(c *gin.Context) {
-	isSync, err := strconv.ParseBool(c.Query("isSync"))
-	if err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
-		return
-	}
+	isSync := c.GetBool("isSync")
 
 	execBashDTOList := make([]dto.ExecBash, 0)
 
 	if err := c.ShouldBindJSON(&execBashDTOList); err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.BashExecuteDTOList)
 		return
 	}
 
@@ -212,7 +217,7 @@ func (h *BashHandler) ExecBashList(c *gin.Context) {
 func (h *BashHandler) RemoveBashById(c *gin.Context) {
 	bashId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.Validate)
+		api.RaiseError(c, h.httpErrors.BashId)
 		return
 	}
 
