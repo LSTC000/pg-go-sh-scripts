@@ -16,16 +16,16 @@ type (
 	}
 
 	BashLogUseCase struct {
-		service    service.IBashLogService
-		httpErrors *config.HTTPErrors
+		service     service.IBashLogService
+		bashService service.IBashService
+		httpErrors  *config.HTTPErrors
 	}
 )
 
 func (u *BashLogUseCase) GetBashLogPaginationPageByBashId(bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (alias.BashLogLimitOffsetPage, error) {
 	var bashLogPaginationPage alias.BashLogLimitOffsetPage
 
-	bashService := service.GetBashService()
-	_, err := bashService.GetOneById(context.Background(), bashId)
+	_, err := u.bashService.GetOneById(context.Background(), bashId)
 	if err != nil {
 		return bashLogPaginationPage, u.httpErrors.BashDoesNotExists
 	}
@@ -40,7 +40,8 @@ func (u *BashLogUseCase) GetBashLogPaginationPageByBashId(bashId uuid.UUID, pagi
 
 func GetBashLogUseCase() IBashLogUseCase {
 	return &BashLogUseCase{
-		service:    service.GetBashLogService(),
-		httpErrors: config.GetHTTPErrors(),
+		service:     service.GetBashLogService(),
+		bashService: service.GetBashService(),
+		httpErrors:  config.GetHTTPErrors(),
 	}
 }
