@@ -49,10 +49,6 @@ func runServer(r *gin.Engine, cfg *config.Config) error {
 }
 
 func (s *Server) Run() error {
-	if err := setDotEnv(); err != nil {
-		return err
-	}
-
 	cfg := config.GetConfig()
 
 	pgClient, err := setPgConn()

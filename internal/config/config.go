@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"pg-sh-scripts/internal/config/api"
@@ -8,6 +9,8 @@ import (
 	"pg-sh-scripts/internal/config/project"
 	"pg-sh-scripts/internal/config/server"
 	"sync"
+
+	"github.com/joho/godotenv"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -31,6 +34,13 @@ func validateConfigPath(cfgPath string) error {
 	return nil
 }
 
+func setDotEnv() error {
+	if err := godotenv.Load(); err != nil {
+		return fmt.Errorf("cannot load .env file: %w", err)
+	}
+	return nil
+}
+
 func setConfig(cfg *Config, cfgPath string) error {
 	if err := cleanenv.ReadConfig(cfgPath, cfg); err != nil {
 		return err
@@ -46,6 +56,9 @@ func GetConfig() *Config {
 
 		if err := validateConfigPath(cfgPath); err != nil {
 			log.Fatalf("Config path error: %v", err)
+		}
+		if err := setDotEnv(); err != nil {
+			log.Fatalf("Set dotenv error: %v", err)
 		}
 		if err := setConfig(&cfg, cfgPath); err != nil {
 			log.Fatalf("Config create error: %v", err)
