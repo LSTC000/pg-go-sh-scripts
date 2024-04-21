@@ -8,6 +8,7 @@ import (
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/model"
+	"pg-sh-scripts/internal/type/alias"
 	"pg-sh-scripts/pkg/logging"
 	"pg-sh-scripts/pkg/sql/pagination"
 
@@ -50,8 +51,8 @@ func (p PgBashRepository) GetOneById(ctx context.Context, id uuid.UUID) (*model.
 	return bash, nil
 }
 
-func (p PgBashRepository) GetPaginationPage(ctx context.Context, paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.Bash], error) {
-	var bashPaginationPage pagination.LimitOffsetPage[*model.Bash]
+func (p PgBashRepository) GetPaginationPage(ctx context.Context, paginationParams pagination.LimitOffsetParams) (alias.BashLimitOffsetPage, error) {
+	var bashPaginationPage alias.BashLimitOffsetPage
 
 	p.logger.Debug("Start getting bash pagination page")
 	q := `

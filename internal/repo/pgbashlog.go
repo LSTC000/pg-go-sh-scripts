@@ -8,6 +8,7 @@ import (
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/model"
+	"pg-sh-scripts/internal/type/alias"
 	"pg-sh-scripts/pkg/logging"
 	"pg-sh-scripts/pkg/sql/pagination"
 
@@ -24,8 +25,8 @@ type PgBashLogRepository struct {
 	logger *logging.Logger
 }
 
-func (p PgBashLogRepository) GetPaginationPageByBashId(ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.BashLog], error) {
-	var bashLogPaginationPage pagination.LimitOffsetPage[*model.BashLog]
+func (p PgBashLogRepository) GetPaginationPageByBashId(ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (alias.BashLogLimitOffsetPage, error) {
+	var bashLogPaginationPage alias.BashLogLimitOffsetPage
 
 	p.logger.Debug(fmt.Sprintf("Start getting bash log pagination page by bash id: %v", bashId))
 	q := `

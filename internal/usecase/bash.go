@@ -23,7 +23,7 @@ type (
 	IBashUseCase interface {
 		GetBashById(bashId uuid.UUID) (*model.Bash, error)
 		GetBashFileBufferById(bashId uuid.UUID) (*bytes.Buffer, alias.BashTitle, error)
-		GetBashPaginationPage(paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.Bash], error)
+		GetBashPaginationPage(paginationParams pagination.LimitOffsetParams) (alias.BashLimitOffsetPage, error)
 		CreateBash(file *multipart.FileHeader) (*model.Bash, error)
 		ExecBashList(isSync bool, dto []dto.ExecBash) error
 		RemoveBashById(bashId uuid.UUID) (*model.Bash, error)
@@ -57,7 +57,7 @@ func (u *BashUseCase) GetBashFileBufferById(bashId uuid.UUID) (*bytes.Buffer, al
 	return bashFileBuffer, bash.Title, nil
 }
 
-func (u *BashUseCase) GetBashPaginationPage(paginationParams pagination.LimitOffsetParams) (pagination.LimitOffsetPage[*model.Bash], error) {
+func (u *BashUseCase) GetBashPaginationPage(paginationParams pagination.LimitOffsetParams) (alias.BashLimitOffsetPage, error) {
 	bashPaginationPage, err := u.service.GetPaginationPage(context.Background(), paginationParams)
 	if err != nil {
 		return bashPaginationPage, u.httpErrors.BashGetPaginationPage
