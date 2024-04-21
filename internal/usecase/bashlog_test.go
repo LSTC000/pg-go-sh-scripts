@@ -58,6 +58,20 @@ func TestBashLogUseCase_GetBashLogPaginationPageByBashId(t *testing.T) {
 				err:            httpErrors.BashDoesNotExists,
 			},
 		},
+		{
+			name:             "Getting bash log pagination page error",
+			ctx:              context.Background(),
+			bashId:           uuid.NewV4(),
+			paginationParams: pagination.LimitOffsetParams{},
+			mockBehavior: func(mbl *mock_service.MockIBashLogService, mb *mock_service.MockIBashService, ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) {
+				mb.EXPECT().GetOneById(ctx, bashId).Return(&model.Bash{}, nil)
+				mbl.EXPECT().GetPaginationPageByBashId(ctx, bashId, paginationParams).Return(alias.BashLogLimitOffsetPage{}, httpErrors.BashLogGetPaginationPageByBashId)
+			},
+			expected: expectedStruct{
+				paginationPage: alias.BashLogLimitOffsetPage{},
+				err:            httpErrors.BashLogGetPaginationPageByBashId,
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
