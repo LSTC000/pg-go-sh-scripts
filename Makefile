@@ -1,4 +1,7 @@
 GO=go
+GO_TEST=$(GO) test
+
+MOCK_GEN=mockgen
 
 APP_CMD_NAME=main.go
 APP_CMD_PATH=cmd/app
@@ -13,6 +16,7 @@ DC_LOCAL=$(DC) -f ./deploy/docker-compose.local.yaml
 DC_PROD=$(DC) -f ./deploy/docker-compose.prod.yaml
 
 
+# --================ App ================--
 .PHONY: app-run
 app-run:
 	$(GO) run ./$(APP_CMD_PATH)/$(APP_CMD_NAME)
@@ -26,6 +30,7 @@ app-start:
 	./$(APP_BUILD_PATH)/$(APP_BUILD_NAME)
 
 
+# --================ Code Style ================--
 .PHONY: import-run
 import-run:
 	goimports -w -l ./..
@@ -39,11 +44,35 @@ lint-run:
 	golangci-lint run
 
 
+# --================ Swagger ================--
 .PHONY: swag-gen
 swag-gen:
 	swag init -g ./cmd/app/main.go
 
 
+# --================ Mock ================--
+.PHONY: mock-bash-service-gen
+mock-bash-service-gen:
+	$(MOCK_GEN) -source=./internal/service/bash.go -destination=internal/service/mock/mock_bash.go
+
+.PHONY: mock-bashlog-service-gen
+mock-bashlog-service-gen:
+	$(MOCK_GEN) -source=./internal/service/bashlog.go -destination=internal/service/mock/mock_bashlog.go
+
+
+# --================ Test ================--
+.PHONY: test-run
+test-run:
+	$(GO_TEST) -v -count=1 ./...
+
+.PHONY: test-cover
+test-cover:
+	$(GO_TEST) -short -count=1 -race -coverprofile=coverage.out ./...
+	$(GO) tool cover -html=coverage.out
+	rm coverage.out
+
+
+# --================ Migration Goose ================--
 .PHONY: goose-create
 goose-create:
 	goose -dir $(MIGRATION_DIR) create $(MIGRATION_NAME) sql
@@ -57,6 +86,7 @@ goose-pg-down:
 	goose -dir $(MIGRATION_DIR) postgres $(MIGRATION_PG_CRED) down
 
 
+# --================ Docker Local ================--
 .PHONY: docker-local
 docker-local:
 	$(DC_LOCAL) up -d --build
@@ -94,6 +124,7 @@ docker-local-logs-f:
 	$(DC_LOCAL) logs -f
 
 
+# --================ Docker Prod ================--
 .PHONY: docker-prod
 docker-prod:
 	$(DC_PROD) up -d --build
