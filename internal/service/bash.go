@@ -11,6 +11,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+//go:generate mockgen -source=./bash.go  -destination=./mock/bash.go
+
 type (
 	IBashService interface {
 		GetOneById(ctx context.Context, id uuid.UUID) (*model.Bash, error)

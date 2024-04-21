@@ -11,6 +11,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+//go:generate mockgen -source=./bashlog.go  -destination=./mock/bashlog.go
+
 type (
 	IBashLogService interface {
 		GetPaginationPageByBashId(ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (alias.BashLogLimitOffsetPage, error)

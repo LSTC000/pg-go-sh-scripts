@@ -1,5 +1,6 @@
 GO=go
 GO_TEST=$(GO) test
+GO_GENERATE=$(GO) generate
 
 MOCK_GEN=mockgen
 
@@ -50,14 +51,10 @@ swag-gen:
 	swag init -g ./cmd/app/main.go
 
 
-# --================ Mock ================--
-.PHONY: mock-bash-service-gen
-mock-bash-service-gen:
-	$(MOCK_GEN) -source=./internal/service/bash.go -destination=internal/service/mock/mock_bash.go
-
-.PHONY: mock-bashlog-service-gen
-mock-bashlog-service-gen:
-	$(MOCK_GEN) -source=./internal/service/bashlog.go -destination=internal/service/mock/mock_bashlog.go
+# --================ Generate ================--
+.PHONY: gen-run
+gen-run:
+	$(GO_GENERATE) ./...
 
 
 # --================ Test ================--
