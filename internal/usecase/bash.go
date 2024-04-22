@@ -19,6 +19,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+//go:generate mockgen -source=./bash.go  -destination=./mock/bash.go
+
 type (
 	IBashUseCase interface {
 		GetBashById(bashId uuid.UUID) (*model.Bash, error)
