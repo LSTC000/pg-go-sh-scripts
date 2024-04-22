@@ -31,6 +31,7 @@ type (
 
 	BashUseCase struct {
 		service    service.IBashService
+		util       util.IBashUtil
 		httpErrors *config.HTTPErrors
 	}
 )
@@ -48,13 +49,7 @@ func (u *BashUseCase) GetBashFileBufferById(bashId uuid.UUID) (*bytes.Buffer, al
 	if err != nil {
 		return nil, "", u.httpErrors.BashDoesNotExists
 	}
-
-	bashFileBuffer, err := util.GetBashFileBuffer(bash.Title, bash.Body)
-	if err != nil {
-		return nil, "", u.httpErrors.BashGetFileBuffer
-	}
-
-	return bashFileBuffer, bash.Title, nil
+	return u.util.GetBashFileBuffer(bash.Body), bash.Title, nil
 }
 
 func (u *BashUseCase) GetBashPaginationPage(paginationParams pagination.LimitOffsetParams) (alias.BashLimitOffsetPage, error) {
@@ -67,15 +62,22 @@ func (u *BashUseCase) GetBashPaginationPage(paginationParams pagination.LimitOff
 
 func (u *BashUseCase) CreateBash(file *multipart.FileHeader) (*model.Bash, error) {
 	fileName := file.Filename
-	fileExtension := util.GetBashFileExtension(fileName)
+	fileExtension := u.util.GetBashFileExtension(fileName)
 
-	if err := util.ValidateBashFileExtension(fileExtension); err != nil {
+	if ok := u.util.ValidateBashFileExtension(fileExtension); !ok {
 		return nil, u.httpErrors.BashFileExtension
 	}
 
-	fileTitle := util.GetBashFileTitle(fileName)
-	fileBody, err := util.GetBashFileBody(file)
+	fileTitle := u.util.GetBashFileTitle(fileName)
+	if fileTitle == "" {
+		return nil, u.httpErrors.BashFileTitle
+	}
+
+	fileBody, err := u.util.GetBashFileBody(file)
 	if err != nil {
+		return nil, u.httpErrors.BashGetFileBody
+	}
+	if fileBody == "" {
 		return nil, u.httpErrors.BashFileBody
 	}
 
@@ -149,6 +151,7 @@ func (u *BashUseCase) RemoveBashById(bashId uuid.UUID) (*model.Bash, error) {
 func GeBashUseCase() IBashUseCase {
 	return &BashUseCase{
 		service:    service.GetBashService(),
+		util:       util.GetBashUtil(),
 		httpErrors: config.GetHTTPErrors(),
 	}
 }

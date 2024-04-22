@@ -12,21 +12,31 @@ import (
 
 const bashFileExtension = ".sh"
 
-func GetBashFileBuffer(title, body string) (*bytes.Buffer, error) {
-	if title == "" || body == "" {
-		return nil, fmt.Errorf("title or body bash script cannot be empty")
+type (
+	IBashUtil interface {
+		ValidateBashFileExtension(string) bool
+		GetBashFileExtension(string) string
+		GetBashFileTitle(string) string
+		GetBashFileBody(*multipart.FileHeader) (string, error)
+		GetBashFileBuffer(string) *bytes.Buffer
 	}
 
-	fileBuffer := bytes.NewBufferString(body)
+	BashUtil struct{}
+)
 
-	return fileBuffer, nil
+func (u *BashUtil) ValidateBashFileExtension(fileExtension string) bool {
+	return fileExtension == bashFileExtension
 }
 
-func GetBashFileTitle(fileName string) string {
+func (u *BashUtil) GetBashFileExtension(fileName string) string {
+	return filepath.Ext(fileName)
+}
+
+func (u *BashUtil) GetBashFileTitle(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
-func GetBashFileBody(file *multipart.FileHeader) (string, error) {
+func (u *BashUtil) GetBashFileBody(file *multipart.FileHeader) (string, error) {
 	var bashFileBody string
 
 	f, err := file.Open()
@@ -53,13 +63,10 @@ func GetBashFileBody(file *multipart.FileHeader) (string, error) {
 	return bashFileBody, nil
 }
 
-func GetBashFileExtension(fileName string) string {
-	return filepath.Ext(fileName)
+func (u *BashUtil) GetBashFileBuffer(body string) *bytes.Buffer {
+	return bytes.NewBufferString(body)
 }
 
-func ValidateBashFileExtension(fileExtension string) error {
-	if fileExtension != bashFileExtension {
-		return fmt.Errorf("invalid bash file extension: %s", fileExtension)
-	}
-	return nil
+func GetBashUtil() IBashUtil {
+	return &BashUtil{}
 }

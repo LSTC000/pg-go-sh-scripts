@@ -15,10 +15,11 @@ type HTTPErrors struct {
 	BashId                error
 	BashFileUpload        error
 	BashFileExtension     error
+	BashGetFileBody       error
+	BashFileTitle         error
 	BashFileBody          error
 	BashCreate            error
 	BashDoesNotExists     error
-	BashGetFileBuffer     error
 	BashGetPaginationPage error
 	BashExecuteDTOList    error
 	BashExecute           error
@@ -76,7 +77,7 @@ func setHTTPErrors(errors *HTTPErrors) {
 		Detail:      "The bash id must be of type uuid4 like 151a583c-0ea0-46b8-b8a6-6bdcdd51655a",
 	}
 	errors.BashFileUpload = &schema.HTTPError{
-		HTTPCode:    http.StatusUnprocessableEntity,
+		HTTPCode:    http.StatusBadRequest,
 		ServiceCode: 201,
 		Detail:      "The bash script file has not been uploaded",
 	}
@@ -85,44 +86,49 @@ func setHTTPErrors(errors *HTTPErrors) {
 		ServiceCode: 202,
 		Detail:      "The file extension should only be .sh",
 	}
-	errors.BashFileBody = &schema.HTTPError{
+	errors.BashFileTitle = &schema.HTTPError{
 		HTTPCode:    http.StatusUnprocessableEntity,
 		ServiceCode: 203,
+		Detail:      "The file title should not be an empty string",
+	}
+	errors.BashFileBody = &schema.HTTPError{
+		HTTPCode:    http.StatusUnprocessableEntity,
+		ServiceCode: 204,
+		Detail:      "The file body should not be an empty string",
+	}
+	errors.BashGetFileBody = &schema.HTTPError{
+		HTTPCode:    http.StatusBadRequest,
+		ServiceCode: 205,
 		Detail:      "An error occurred while reading the body of the file",
 	}
 	errors.BashCreate = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 204,
+		ServiceCode: 206,
 		Detail:      "An error occurred during the creation of the bash script entity",
 	}
 	errors.BashDoesNotExists = &schema.HTTPError{
 		HTTPCode:    http.StatusNotFound,
-		ServiceCode: 205,
+		ServiceCode: 207,
 		Detail:      "The specified bash script does not exists",
-	}
-	errors.BashGetFileBuffer = &schema.HTTPError{
-		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 206,
-		Detail:      "An error occurred while retrieving the content buffer of the bash script",
 	}
 	errors.BashGetPaginationPage = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 207,
+		ServiceCode: 208,
 		Detail:      "An error occurred while receiving the pagination page of bash scripts",
 	}
 	errors.BashExecuteDTOList = &schema.HTTPError{
 		HTTPCode:    http.StatusUnprocessableEntity,
-		ServiceCode: 208,
+		ServiceCode: 209,
 		Detail:      "Invalid body of the request to start executing bash scripts",
 	}
 	errors.BashExecute = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 209,
+		ServiceCode: 210,
 		Detail:      "An error occurred while executing the bash script",
 	}
 	errors.BashRemove = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 210,
+		ServiceCode: 211,
 		Detail:      "An error occurred while deleting the bash script",
 	}
 
