@@ -16,26 +16,34 @@ import (
 )
 
 func TestBashLogUseCase_GetBashLogPaginationPageByBashId(t *testing.T) {
-	type expectedStruct struct {
-		paginationPage alias.BashLogLimitOffsetPage
-		err            error
-	}
+	type (
+		inStruct struct {
+			ctx              context.Context
+			bashId           uuid.UUID
+			paginationParams pagination.LimitOffsetParams
+		}
+
+		expectedStruct struct {
+			paginationPage alias.BashLogLimitOffsetPage
+			err            error
+		}
+	)
 
 	httpErrors := config.GetHTTPErrors()
 
 	testCases := []struct {
-		name             string
-		ctx              context.Context
-		bashId           uuid.UUID
-		paginationParams pagination.LimitOffsetParams
-		mockBehavior     func(*mock_service.MockIBashLogService, *mock_service.MockIBashService, context.Context, uuid.UUID, pagination.LimitOffsetParams)
-		expected         expectedStruct
+		name         string
+		in           inStruct
+		mockBehavior func(*mock_service.MockIBashLogService, *mock_service.MockIBashService, context.Context, uuid.UUID, pagination.LimitOffsetParams)
+		expected     expectedStruct
 	}{
 		{
-			name:             "Success",
-			ctx:              context.Background(),
-			bashId:           uuid.NewV4(),
-			paginationParams: pagination.LimitOffsetParams{},
+			name: "Success",
+			in: inStruct{
+				ctx:              context.Background(),
+				bashId:           uuid.NewV4(),
+				paginationParams: pagination.LimitOffsetParams{},
+			},
 			mockBehavior: func(mbl *mock_service.MockIBashLogService, mb *mock_service.MockIBashService, ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) {
 				mb.EXPECT().GetOneById(ctx, bashId).Return(&model.Bash{}, nil)
 				mbl.EXPECT().GetPaginationPageByBashId(ctx, bashId, paginationParams).Return(alias.BashLogLimitOffsetPage{}, nil)
@@ -46,10 +54,12 @@ func TestBashLogUseCase_GetBashLogPaginationPageByBashId(t *testing.T) {
 			},
 		},
 		{
-			name:             "Bash does not exists",
-			ctx:              context.Background(),
-			bashId:           uuid.NewV4(),
-			paginationParams: pagination.LimitOffsetParams{},
+			name: "Bash does not exists",
+			in: inStruct{
+				ctx:              context.Background(),
+				bashId:           uuid.NewV4(),
+				paginationParams: pagination.LimitOffsetParams{},
+			},
 			mockBehavior: func(mbl *mock_service.MockIBashLogService, mb *mock_service.MockIBashService, ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) {
 				mb.EXPECT().GetOneById(ctx, bashId).Return(nil, httpErrors.BashDoesNotExists)
 			},
@@ -59,10 +69,12 @@ func TestBashLogUseCase_GetBashLogPaginationPageByBashId(t *testing.T) {
 			},
 		},
 		{
-			name:             "Getting bash log pagination page error",
-			ctx:              context.Background(),
-			bashId:           uuid.NewV4(),
-			paginationParams: pagination.LimitOffsetParams{},
+			name: "Getting bash log pagination page error",
+			in: inStruct{
+				ctx:              context.Background(),
+				bashId:           uuid.NewV4(),
+				paginationParams: pagination.LimitOffsetParams{},
+			},
 			mockBehavior: func(mbl *mock_service.MockIBashLogService, mb *mock_service.MockIBashService, ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) {
 				mb.EXPECT().GetOneById(ctx, bashId).Return(&model.Bash{}, nil)
 				mbl.EXPECT().GetPaginationPageByBashId(ctx, bashId, paginationParams).Return(alias.BashLogLimitOffsetPage{}, httpErrors.BashLogGetPaginationPageByBashId)
@@ -81,7 +93,7 @@ func TestBashLogUseCase_GetBashLogPaginationPageByBashId(t *testing.T) {
 
 			mockBashService := mock_service.NewMockIBashService(ctrl)
 			mockBashLogService := mock_service.NewMockIBashLogService(ctrl)
-			testCase.mockBehavior(mockBashLogService, mockBashService, testCase.ctx, testCase.bashId, testCase.paginationParams)
+			testCase.mockBehavior(mockBashLogService, mockBashService, testCase.in.ctx, testCase.in.bashId, testCase.in.paginationParams)
 
 			bashLogUseCase := BashLogUseCase{
 				service:     mockBashLogService,
@@ -89,7 +101,7 @@ func TestBashLogUseCase_GetBashLogPaginationPageByBashId(t *testing.T) {
 				httpErrors:  httpErrors,
 			}
 
-			bashLogPaginationPage, err := bashLogUseCase.GetBashLogPaginationPageByBashId(testCase.bashId, testCase.paginationParams)
+			bashLogPaginationPage, err := bashLogUseCase.GetBashLogPaginationPageByBashId(testCase.in.bashId, testCase.in.paginationParams)
 
 			assert.Equal(t, testCase.expected.paginationPage, bashLogPaginationPage)
 			assert.Equal(t, testCase.expected.err, err)

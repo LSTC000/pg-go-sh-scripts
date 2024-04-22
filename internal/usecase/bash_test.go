@@ -9,33 +9,38 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 
 	_ "github.com/stretchr/testify/assert"
 )
 
 func TestBashUseCase_GetBashPaginationPage(t *testing.T) {
-	type expectedStruct struct {
-		paginationPage alias.BashLimitOffsetPage
-		err            error
-	}
+	type (
+		inStruct struct {
+			ctx              context.Context
+			paginationParams pagination.LimitOffsetParams
+		}
+
+		expectedStruct struct {
+			paginationPage alias.BashLimitOffsetPage
+			err            error
+		}
+	)
 
 	httpErrors := config.GetHTTPErrors()
 
 	testCases := []struct {
-		name             string
-		ctx              context.Context
-		bashId           uuid.UUID
-		paginationParams pagination.LimitOffsetParams
-		mockBehavior     func(*mock_service.MockIBashService, context.Context, pagination.LimitOffsetParams)
-		expected         expectedStruct
+		name         string
+		in           inStruct
+		mockBehavior func(*mock_service.MockIBashService, context.Context, pagination.LimitOffsetParams)
+		expected     expectedStruct
 	}{
 		{
-			name:             "Success",
-			ctx:              context.Background(),
-			bashId:           uuid.NewV4(),
-			paginationParams: pagination.LimitOffsetParams{},
+			name: "Success",
+			in: inStruct{
+				ctx:              context.Background(),
+				paginationParams: pagination.LimitOffsetParams{},
+			},
 			mockBehavior: func(m *mock_service.MockIBashService, ctx context.Context, paginationParams pagination.LimitOffsetParams) {
 				m.EXPECT().GetPaginationPage(ctx, paginationParams).Return(alias.BashLimitOffsetPage{}, nil)
 			},
@@ -45,10 +50,11 @@ func TestBashUseCase_GetBashPaginationPage(t *testing.T) {
 			},
 		},
 		{
-			name:             "Getting bash pagination page error",
-			ctx:              context.Background(),
-			bashId:           uuid.NewV4(),
-			paginationParams: pagination.LimitOffsetParams{},
+			name: "Getting bash pagination page error",
+			in: inStruct{
+				ctx:              context.Background(),
+				paginationParams: pagination.LimitOffsetParams{},
+			},
 			mockBehavior: func(m *mock_service.MockIBashService, ctx context.Context, paginationParams pagination.LimitOffsetParams) {
 				m.EXPECT().GetPaginationPage(ctx, paginationParams).Return(alias.BashLimitOffsetPage{}, httpErrors.BashGetPaginationPage)
 			},
@@ -65,14 +71,14 @@ func TestBashUseCase_GetBashPaginationPage(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockBashService := mock_service.NewMockIBashService(ctrl)
-			testCase.mockBehavior(mockBashService, testCase.ctx, testCase.paginationParams)
+			testCase.mockBehavior(mockBashService, testCase.in.ctx, testCase.in.paginationParams)
 
 			bashUseCase := BashUseCase{
 				service:    mockBashService,
 				httpErrors: httpErrors,
 			}
 
-			bashLogPaginationPage, err := bashUseCase.GetBashPaginationPage(testCase.paginationParams)
+			bashLogPaginationPage, err := bashUseCase.GetBashPaginationPage(testCase.in.paginationParams)
 
 			assert.Equal(t, testCase.expected.paginationPage, bashLogPaginationPage)
 			assert.Equal(t, testCase.expected.err, err)
