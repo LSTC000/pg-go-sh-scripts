@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	groupBashLogPath       = "/bash/log"
-	getBashLogByBashIdPath = "/:bashId/list"
+	groupBashLogPath           = "/bash/log"
+	getBashLogListByBashIdPath = "/:bashId/list"
 )
 
 type (
@@ -24,6 +24,7 @@ type (
 
 	BashLogHandler struct {
 		useCase    usecase.IBashLogUseCase
+		helper     api.IHelper
 		httpErrors *config.HTTPErrors
 	}
 )
@@ -31,7 +32,7 @@ type (
 func (h *BashLogHandler) Register(rg *gin.RouterGroup) {
 	group := rg.Group(groupBashLogPath)
 	{
-		group.GET(getBashLogByBashIdPath, h.GetBashLogListByBashId)
+		group.GET(getBashLogListByBashIdPath, h.GetBashLogListByBashId)
 	}
 }
 
@@ -49,27 +50,32 @@ func (h *BashLogHandler) Register(rg *gin.RouterGroup) {
 func (h *BashLogHandler) GetBashLogListByBashId(c *gin.Context) {
 	bashId, err := uuid.FromString(c.Param("bashId"))
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.BashId)
+		httpError := h.helper.ParseError(c, h.httpErrors.BashId)
+		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
 	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.PaginationLimitParamMustBeInt)
+		httpError := h.helper.ParseError(c, h.httpErrors.PaginationLimitParamMustBeInt)
+		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 	if limit < 0 {
-		api.RaiseError(c, h.httpErrors.PaginationLimitParamGTEZero)
+		httpError := h.helper.ParseError(c, h.httpErrors.PaginationLimitParamGTEZero)
+		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
 	offset, err := strconv.Atoi(c.Query("offset"))
 	if err != nil {
-		api.RaiseError(c, h.httpErrors.PaginationOffsetParamMustBeInt)
+		httpError := h.helper.ParseError(c, h.httpErrors.PaginationOffsetParamMustBeInt)
+		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 	if offset < 0 {
-		api.RaiseError(c, h.httpErrors.PaginationOffsetParamGTEZero)
+		httpError := h.helper.ParseError(c, h.httpErrors.PaginationOffsetParamGTEZero)
+		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
@@ -80,7 +86,8 @@ func (h *BashLogHandler) GetBashLogListByBashId(c *gin.Context) {
 
 	bashLogList, err := h.useCase.GetBashLogPaginationPageByBashId(bashId, paginationParams)
 	if err != nil {
-		api.RaiseError(c, err)
+		httpError := h.helper.ParseError(c, err)
+		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
@@ -90,6 +97,7 @@ func (h *BashLogHandler) GetBashLogListByBashId(c *gin.Context) {
 func GetBashLogHandler() api.IHandler {
 	return &BashLogHandler{
 		useCase:    usecase.GetBashLogUseCase(),
+		helper:     api.GetHelper(),
 		httpErrors: config.GetHTTPErrors(),
 	}
 }
