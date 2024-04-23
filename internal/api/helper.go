@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//go:generate mockgen -source=./helper.go  -destination=./mock/helper.go
+
 type (
 	IHelper interface {
 		ParseError(*gin.Context, error) *schema.HTTPError
