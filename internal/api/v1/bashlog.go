@@ -50,31 +50,31 @@ func (h *BashLogHandler) Register(rg *gin.RouterGroup) {
 func (h *BashLogHandler) GetBashLogListByBashId(c *gin.Context) {
 	bashId, err := uuid.FromString(c.Param("bashId"))
 	if err != nil {
-		httpError := h.helper.ParseError(c, h.httpErrors.BashId)
+		httpError := h.helper.ParseError(h.httpErrors.BashId)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
 	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
-		httpError := h.helper.ParseError(c, h.httpErrors.PaginationLimitParamMustBeInt)
+		httpError := h.helper.ParseError(h.httpErrors.PaginationLimitParamMustBeInt)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 	if limit < 0 {
-		httpError := h.helper.ParseError(c, h.httpErrors.PaginationLimitParamGTEZero)
+		httpError := h.helper.ParseError(h.httpErrors.PaginationLimitParamGTEZero)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
 	offset, err := strconv.Atoi(c.Query("offset"))
 	if err != nil {
-		httpError := h.helper.ParseError(c, h.httpErrors.PaginationOffsetParamMustBeInt)
+		httpError := h.helper.ParseError(h.httpErrors.PaginationOffsetParamMustBeInt)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 	if offset < 0 {
-		httpError := h.helper.ParseError(c, h.httpErrors.PaginationOffsetParamGTEZero)
+		httpError := h.helper.ParseError(h.httpErrors.PaginationOffsetParamGTEZero)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
@@ -86,7 +86,7 @@ func (h *BashLogHandler) GetBashLogListByBashId(c *gin.Context) {
 
 	bashLogList, err := h.useCase.GetBashLogPaginationPageByBashId(bashId, paginationParams)
 	if err != nil {
-		httpError := h.helper.ParseError(c, err)
+		httpError := h.helper.ParseError(err)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}

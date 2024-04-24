@@ -7,15 +7,13 @@ import (
 	"pg-sh-scripts/internal/log"
 	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/pkg/logging"
-
-	"github.com/gin-gonic/gin"
 )
 
 //go:generate mockgen -source=./helper.go  -destination=./mock/helper.go
 
 type (
 	IHelper interface {
-		ParseError(*gin.Context, error) *schema.HTTPError
+		ParseError(err error) *schema.HTTPError
 	}
 
 	Helper struct {
@@ -24,13 +22,13 @@ type (
 	}
 )
 
-func (e *Helper) ParseError(c *gin.Context, err error) *schema.HTTPError {
+func (e *Helper) ParseError(err error) *schema.HTTPError {
 	var httpErr *schema.HTTPError
 
 	if errors.As(err, &httpErr) {
-		e.logger.Error(fmt.Sprintf("Path: %s Error: %v", c.FullPath(), err))
+		e.logger.Error(fmt.Sprintf("Service error: %v", err))
 	} else {
-		e.logger.Error(fmt.Sprintf("Path: %s Unknown Error: %v", c.FullPath(), err))
+		e.logger.Error(fmt.Sprintf("Unknown error: %v", err))
 		errors.As(e.httpErrors.Internal, &httpErr)
 	}
 

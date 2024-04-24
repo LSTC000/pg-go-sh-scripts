@@ -8,7 +8,6 @@ import (
 	schema "pg-sh-scripts/internal/schema"
 	reflect "reflect"
 
-	gin "github.com/gin-gonic/gin"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,15 +35,15 @@ func (m *MockIHelper) EXPECT() *MockIHelperMockRecorder {
 }
 
 // ParseError mocks base method.
-func (m *MockIHelper) ParseError(arg0 *gin.Context, arg1 error) *schema.HTTPError {
+func (m *MockIHelper) ParseError(err error) *schema.HTTPError {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ParseError", arg0, arg1)
+	ret := m.ctrl.Call(m, "ParseError", err)
 	ret0, _ := ret[0].(*schema.HTTPError)
 	return ret0
 }
 
 // ParseError indicates an expected call of ParseError.
-func (mr *MockIHelperMockRecorder) ParseError(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockIHelperMockRecorder) ParseError(err interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseError", reflect.TypeOf((*MockIHelper)(nil).ParseError), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseError", reflect.TypeOf((*MockIHelper)(nil).ParseError), err)
 }

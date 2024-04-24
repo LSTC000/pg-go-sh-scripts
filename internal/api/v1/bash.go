@@ -67,14 +67,14 @@ func (h *BashHandler) Register(rg *gin.RouterGroup) {
 func (h *BashHandler) GetBashById(c *gin.Context) {
 	bashId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
-		httpError := h.helper.ParseError(c, h.httpErrors.BashId)
+		httpError := h.helper.ParseError(h.httpErrors.BashId)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
 	bash, err := h.useCase.GetBashById(bashId)
 	if err != nil {
-		httpError := h.helper.ParseError(c, err)
+		httpError := h.helper.ParseError(err)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
@@ -94,14 +94,14 @@ func (h *BashHandler) GetBashById(c *gin.Context) {
 func (h *BashHandler) GetBashFileById(c *gin.Context) {
 	bashId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
-		httpError := h.helper.ParseError(c, h.httpErrors.BashId)
+		httpError := h.helper.ParseError(h.httpErrors.BashId)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
 	bashFileBuffer, bashTitle, err := h.useCase.GetBashFileBufferById(bashId)
 	if err != nil {
-		httpError := h.helper.ParseError(c, err)
+		httpError := h.helper.ParseError(err)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
@@ -123,24 +123,24 @@ func (h *BashHandler) GetBashFileById(c *gin.Context) {
 func (h *BashHandler) GetBashList(c *gin.Context) {
 	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
-		httpError := h.helper.ParseError(c, h.httpErrors.PaginationLimitParamMustBeInt)
+		httpError := h.helper.ParseError(h.httpErrors.PaginationLimitParamMustBeInt)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 	if limit < 0 {
-		httpError := h.helper.ParseError(c, h.httpErrors.PaginationLimitParamGTEZero)
+		httpError := h.helper.ParseError(h.httpErrors.PaginationLimitParamGTEZero)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
 	offset, err := strconv.Atoi(c.Query("offset"))
 	if err != nil {
-		httpError := h.helper.ParseError(c, h.httpErrors.PaginationOffsetParamMustBeInt)
+		httpError := h.helper.ParseError(h.httpErrors.PaginationOffsetParamMustBeInt)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 	if offset < 0 {
-		httpError := h.helper.ParseError(c, h.httpErrors.PaginationOffsetParamGTEZero)
+		httpError := h.helper.ParseError(h.httpErrors.PaginationOffsetParamGTEZero)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
@@ -152,7 +152,7 @@ func (h *BashHandler) GetBashList(c *gin.Context) {
 
 	bashList, err := h.useCase.GetBashPaginationPage(paginationParams)
 	if err != nil {
-		httpError := h.helper.ParseError(c, err)
+		httpError := h.helper.ParseError(err)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
@@ -173,14 +173,14 @@ func (h *BashHandler) GetBashList(c *gin.Context) {
 func (h *BashHandler) CreateBash(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
-		httpError := h.helper.ParseError(c, h.httpErrors.BashFileUpload)
+		httpError := h.helper.ParseError(h.httpErrors.BashFileUpload)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
 	bash, err := h.useCase.CreateBash(file)
 	if err != nil {
-		httpError := h.helper.ParseError(c, err)
+		httpError := h.helper.ParseError(err)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
@@ -205,13 +205,13 @@ func (h *BashHandler) ExecBashList(c *gin.Context) {
 	execBashDTOList := make([]dto.ExecBash, 0)
 
 	if err := c.ShouldBindJSON(&execBashDTOList); err != nil {
-		httpError := h.helper.ParseError(c, h.httpErrors.BashExecuteDTOList)
+		httpError := h.helper.ParseError(h.httpErrors.BashExecuteDTOList)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
 	if err := h.useCase.ExecBashList(isSync, execBashDTOList); err != nil {
-		httpError := h.helper.ParseError(c, err)
+		httpError := h.helper.ParseError(err)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
@@ -231,14 +231,14 @@ func (h *BashHandler) ExecBashList(c *gin.Context) {
 func (h *BashHandler) RemoveBashById(c *gin.Context) {
 	bashId, err := uuid.FromString(c.Param("id"))
 	if err != nil {
-		httpError := h.helper.ParseError(c, h.httpErrors.BashId)
+		httpError := h.helper.ParseError(h.httpErrors.BashId)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
 
 	bash, err := h.useCase.RemoveBashById(bashId)
 	if err != nil {
-		httpError := h.helper.ParseError(c, err)
+		httpError := h.helper.ParseError(err)
 		c.JSON(httpError.HTTPCode, httpError)
 		return
 	}
