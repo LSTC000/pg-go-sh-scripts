@@ -10,7 +10,7 @@ APP_BUILD_NAME=main
 APP_BUILD_PATH=build/app
 
 MIGRATION_DIR=migration
-MIGRATION_PG_CRED="user=superuser password=qwerty host=0.0.0.0 port=5437 dbname=scripts sslmode=disable"
+MIGRATION_PG_CRED="user=scripts password=qwerty host=0.0.0.0 port=5437 dbname=scripts sslmode=disable"
 
 DC=docker compose
 DC_LOCAL=$(DC) -f ./deploy/docker-compose.local.yaml
