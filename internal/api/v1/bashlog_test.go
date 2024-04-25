@@ -172,8 +172,10 @@ func TestBashLogHandler_GetBashLogListByBashId(t *testing.T) {
 			mockBehavior: func(mu *mock_usecase.MockIBashLogUseCase, mh *mock_api.MockIHelper, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams, err error) {
 				var httpErr *schema.HTTPError
 				errors.As(err, &httpErr)
-				mu.EXPECT().GetBashLogPaginationPageByBashId(bashId, paginationParams).Return(alias.BashLogLimitOffsetPage{}, err)
-				mh.EXPECT().ParseError(err).Return(httpErr)
+				gomock.InOrder(
+					mu.EXPECT().GetBashLogPaginationPageByBashId(bashId, paginationParams).Return(alias.BashLogLimitOffsetPage{}, err),
+					mh.EXPECT().ParseError(err).Return(httpErr),
+				)
 			},
 			expected: expectedStruct{
 				body: `{"httpCode":400,"serviceCode":300,"detail":"An error occurred while receiving the pagination page of bash log scripts"}`,
