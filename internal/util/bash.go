@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+//go:generate mockgen -source=./bash.go -destination=./mock/bash.go
+
 const bashFileExtension = ".sh"
 
 type (
