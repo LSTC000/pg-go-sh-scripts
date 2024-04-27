@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path"
 	mock_api "pg-sh-scripts/internal/api/mock"
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/model"
@@ -23,6 +25,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const bashGoldenDir = "bash_testdata"
+
 func TestBashHandler_GetBashById(t *testing.T) {
 	type (
 		inStruct struct {
@@ -31,8 +35,8 @@ func TestBashHandler_GetBashById(t *testing.T) {
 		}
 
 		expectedStruct struct {
-			body string
-			code int
+			golden string
+			code   int
 		}
 	)
 
@@ -54,8 +58,8 @@ func TestBashHandler_GetBashById(t *testing.T) {
 				mu.EXPECT().GetBashById(bashId).Return(&model.Bash{}, nil)
 			},
 			expected: expectedStruct{
-				body: `{"id":"00000000-0000-0000-0000-000000000000","title":"","body":"","createdAt":"0001-01-01T00:00:00Z"}`,
-				code: http.StatusOK,
+				golden: "default_bash",
+				code:   http.StatusOK,
 			},
 		},
 		{
@@ -70,8 +74,8 @@ func TestBashHandler_GetBashById(t *testing.T) {
 				mh.EXPECT().ParseError(err).Return(httpErr)
 			},
 			expected: expectedStruct{
-				body: `{"httpCode":422,"serviceCode":200,"detail":"The bash id must be of type uuid4 like 151a583c-0ea0-46b8-b8a6-6bdcdd51655a"}`,
-				code: http.StatusUnprocessableEntity,
+				golden: "bash_id_error",
+				code:   http.StatusUnprocessableEntity,
 			},
 		},
 		{
@@ -90,8 +94,8 @@ func TestBashHandler_GetBashById(t *testing.T) {
 				)
 			},
 			expected: expectedStruct{
-				body: `{"httpCode":404,"serviceCode":207,"detail":"The specified bash script does not exists"}`,
-				code: http.StatusNotFound,
+				golden: "bash_does_not_exists_error",
+				code:   http.StatusNotFound,
 			},
 		},
 	}
@@ -114,19 +118,25 @@ func TestBashHandler_GetBashById(t *testing.T) {
 				httpErrors: httpErrors,
 			}
 
-			path := groupBashPath + getBashByIdPath
-			casePath := strings.Replace(path, ":id", testCase.in.bashId, 1)
+			handlerPath := groupBashPath + getBashByIdPath
+			handlerCasePath := strings.Replace(handlerPath, ":id", testCase.in.bashId, 1)
 
 			r := gin.New()
-			r.GET(path, bashHandler.GetBashById)
+			r.GET(handlerPath, bashHandler.GetBashById)
 
 			recorder := httptest.NewRecorder()
-			request := httptest.NewRequest(http.MethodGet, casePath, nil)
+			request := httptest.NewRequest(http.MethodGet, handlerCasePath, nil)
 
 			r.ServeHTTP(recorder, request)
 
+			content, err := os.ReadFile(path.Join(bashGoldenDir, testCase.expected.golden+".golden"))
+			if err != nil {
+				t.Fatalf("%s Error: %s", t.Name(), err)
+			}
+			expectedBody := string(content)
+
 			assert.Equal(t, testCase.expected.code, recorder.Code)
-			assert.Equal(t, testCase.expected.body, recorder.Body.String())
+			assert.Equal(t, expectedBody, recorder.Body.String())
 		})
 	}
 }
@@ -140,7 +150,7 @@ func TestBashHandler_GetBashFileById(t *testing.T) {
 
 		expectedStruct struct {
 			header http.Header
-			body   string
+			golden string
 			code   int
 		}
 	)
@@ -168,8 +178,8 @@ func TestBashHandler_GetBashFileById(t *testing.T) {
 					"Content-Length":      []string{"0"},
 					"Content-Type":        []string{"application/x-www-form-urlencoded"},
 				},
-				body: "",
-				code: http.StatusOK,
+				golden: "default_bash_file",
+				code:   http.StatusOK,
 			},
 		},
 		{
@@ -185,7 +195,7 @@ func TestBashHandler_GetBashFileById(t *testing.T) {
 			},
 			expected: expectedStruct{
 				header: http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
-				body:   `{"httpCode":422,"serviceCode":200,"detail":"The bash id must be of type uuid4 like 151a583c-0ea0-46b8-b8a6-6bdcdd51655a"}`,
+				golden: "bash_id_error",
 				code:   http.StatusUnprocessableEntity,
 			},
 		},
@@ -206,7 +216,7 @@ func TestBashHandler_GetBashFileById(t *testing.T) {
 			},
 			expected: expectedStruct{
 				header: http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
-				body:   `{"httpCode":404,"serviceCode":207,"detail":"The specified bash script does not exists"}`,
+				golden: "bash_does_not_exists_error",
 				code:   http.StatusNotFound,
 			},
 		},
@@ -230,19 +240,26 @@ func TestBashHandler_GetBashFileById(t *testing.T) {
 				httpErrors: httpErrors,
 			}
 
-			path := groupBashPath + getBashFileByIdPath
-			casePath := strings.Replace(path, ":id", testCase.in.bashId, 1)
+			handlerPath := groupBashPath + getBashFileByIdPath
+			handlerCasePath := strings.Replace(handlerPath, ":id", testCase.in.bashId, 1)
 
 			r := gin.New()
-			r.GET(path, bashHandler.GetBashFileById)
+			r.GET(handlerPath, bashHandler.GetBashFileById)
 
 			recorder := httptest.NewRecorder()
-			request := httptest.NewRequest(http.MethodGet, casePath, nil)
+			request := httptest.NewRequest(http.MethodGet, handlerCasePath, nil)
 
 			r.ServeHTTP(recorder, request)
+
+			content, err := os.ReadFile(path.Join(bashGoldenDir, testCase.expected.golden+".golden"))
+			if err != nil {
+				t.Fatalf("%s Error: %s", t.Name(), err)
+			}
+			expectedBody := string(content)
+
 			assert.Equal(t, testCase.expected.code, recorder.Code)
 			assert.Equal(t, testCase.expected.header, recorder.Result().Header)
-			assert.Equal(t, testCase.expected.body, recorder.Body.String())
+			assert.Equal(t, expectedBody, recorder.Body.String())
 		})
 	}
 }
@@ -257,8 +274,8 @@ func TestBashHandler_GetBashList(t *testing.T) {
 		}
 
 		expectedStruct struct {
-			body string
-			code int
+			golden string
+			code   int
 		}
 	)
 
@@ -282,8 +299,8 @@ func TestBashHandler_GetBashList(t *testing.T) {
 				mu.EXPECT().GetBashPaginationPage(paginationParams).Return(alias.BashLimitOffsetPage{}, nil)
 			},
 			expected: expectedStruct{
-				body: `{"items":null,"limit":0,"offset":0,"total":0}`,
-				code: http.StatusOK,
+				golden: "default_pagination_page",
+				code:   http.StatusOK,
 			},
 		},
 		{
@@ -300,8 +317,8 @@ func TestBashHandler_GetBashList(t *testing.T) {
 				mh.EXPECT().ParseError(err).Return(httpErr)
 			},
 			expected: expectedStruct{
-				body: `{"httpCode":422,"serviceCode":100,"detail":"The limit pagination parameter must be integer"}`,
-				code: http.StatusUnprocessableEntity,
+				golden: "pagination_limit_param_int_error",
+				code:   http.StatusUnprocessableEntity,
 			},
 		},
 		{
@@ -320,8 +337,8 @@ func TestBashHandler_GetBashList(t *testing.T) {
 				mh.EXPECT().ParseError(err).Return(httpErr)
 			},
 			expected: expectedStruct{
-				body: `{"httpCode":422,"serviceCode":101,"detail":"The limit pagination parameter must be greater than or equal to zero"}`,
-				code: http.StatusUnprocessableEntity,
+				golden: "pagination_limit_param_gte_zero_error",
+				code:   http.StatusUnprocessableEntity,
 			},
 		},
 		{
@@ -338,12 +355,12 @@ func TestBashHandler_GetBashList(t *testing.T) {
 				mh.EXPECT().ParseError(err).Return(httpErr)
 			},
 			expected: expectedStruct{
-				body: `{"httpCode":422,"serviceCode":102,"detail":"The offset pagination parameter must be integer"}`,
-				code: http.StatusUnprocessableEntity,
+				golden: "pagination_offset_param_int_error",
+				code:   http.StatusUnprocessableEntity,
 			},
 		},
 		{
-			name: "Limit param gte to zero error",
+			name: "Offset param gte to zero error",
 			in: inStruct{
 				paginationParams: pagination.LimitOffsetParams{
 					Offset: -1,
@@ -358,8 +375,8 @@ func TestBashHandler_GetBashList(t *testing.T) {
 				mh.EXPECT().ParseError(err).Return(httpErr)
 			},
 			expected: expectedStruct{
-				body: `{"httpCode":422,"serviceCode":103,"detail":"The offset pagination parameter must be greater than or equal to zero"}`,
-				code: http.StatusUnprocessableEntity,
+				golden: "pagination_offset_param_gte_zero_error",
+				code:   http.StatusUnprocessableEntity,
 			},
 		},
 		{
@@ -377,8 +394,8 @@ func TestBashHandler_GetBashList(t *testing.T) {
 				mh.EXPECT().ParseError(err).Return(httpErr)
 			},
 			expected: expectedStruct{
-				body: `{"httpCode":400,"serviceCode":300,"detail":"An error occurred while receiving the pagination page of bash log scripts"}`,
-				code: http.StatusBadRequest,
+				golden: "get_pagination_page_error",
+				code:   http.StatusBadRequest,
 			},
 		},
 	}
@@ -400,13 +417,13 @@ func TestBashHandler_GetBashList(t *testing.T) {
 				httpErrors: httpErrors,
 			}
 
-			path := groupBashPath + getBashListPath
+			handlerPath := groupBashPath + getBashListPath
 
 			r := gin.New()
-			r.GET(path, bashHandler.GetBashList)
+			r.GET(handlerPath, bashHandler.GetBashList)
 
 			recorder := httptest.NewRecorder()
-			request := httptest.NewRequest(http.MethodGet, path, nil)
+			request := httptest.NewRequest(http.MethodGet, handlerPath, nil)
 
 			requestQueryParams := request.URL.Query()
 			if testCase.in.limitExists {
@@ -419,8 +436,14 @@ func TestBashHandler_GetBashList(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
+			content, err := os.ReadFile(path.Join(bashGoldenDir, testCase.expected.golden+".golden"))
+			if err != nil {
+				t.Fatalf("%s Error: %s", t.Name(), err)
+			}
+			expectedBody := string(content)
+
 			assert.Equal(t, testCase.expected.code, recorder.Code)
-			assert.Equal(t, testCase.expected.body, recorder.Body.String())
+			assert.Equal(t, expectedBody, recorder.Body.String())
 		})
 	}
 }
@@ -433,8 +456,8 @@ func TestBashHandler_RemoveBashById(t *testing.T) {
 		}
 
 		expectedStruct struct {
-			body string
-			code int
+			golden string
+			code   int
 		}
 	)
 
@@ -456,8 +479,8 @@ func TestBashHandler_RemoveBashById(t *testing.T) {
 				mu.EXPECT().RemoveBashById(bashId).Return(&model.Bash{}, nil)
 			},
 			expected: expectedStruct{
-				body: `{"id":"00000000-0000-0000-0000-000000000000","title":"","body":"","createdAt":"0001-01-01T00:00:00Z"}`,
-				code: http.StatusOK,
+				golden: "default_bash",
+				code:   http.StatusOK,
 			},
 		},
 		{
@@ -472,8 +495,8 @@ func TestBashHandler_RemoveBashById(t *testing.T) {
 				mh.EXPECT().ParseError(err).Return(httpErr)
 			},
 			expected: expectedStruct{
-				body: `{"httpCode":422,"serviceCode":200,"detail":"The bash id must be of type uuid4 like 151a583c-0ea0-46b8-b8a6-6bdcdd51655a"}`,
-				code: http.StatusUnprocessableEntity,
+				golden: "bash_id_error",
+				code:   http.StatusUnprocessableEntity,
 			},
 		},
 		{
@@ -492,8 +515,8 @@ func TestBashHandler_RemoveBashById(t *testing.T) {
 				)
 			},
 			expected: expectedStruct{
-				body: `{"httpCode":400,"serviceCode":211,"detail":"An error occurred while deleting the bash script"}`,
-				code: http.StatusBadRequest,
+				golden: "removing_bas_error",
+				code:   http.StatusBadRequest,
 			},
 		},
 	}
@@ -516,19 +539,25 @@ func TestBashHandler_RemoveBashById(t *testing.T) {
 				httpErrors: httpErrors,
 			}
 
-			path := groupBashPath + removeBashPath
-			casePath := strings.Replace(path, ":id", testCase.in.bashId, 1)
+			handlerPath := groupBashPath + removeBashPath
+			handlerCasePath := strings.Replace(handlerPath, ":id", testCase.in.bashId, 1)
 
 			r := gin.New()
-			r.DELETE(path, bashHandler.RemoveBashById)
+			r.DELETE(handlerPath, bashHandler.RemoveBashById)
 
 			recorder := httptest.NewRecorder()
-			request := httptest.NewRequest(http.MethodDelete, casePath, nil)
+			request := httptest.NewRequest(http.MethodDelete, handlerCasePath, nil)
 
 			r.ServeHTTP(recorder, request)
 
+			content, err := os.ReadFile(path.Join(bashGoldenDir, testCase.expected.golden+".golden"))
+			if err != nil {
+				t.Fatalf("%s Error: %s", t.Name(), err)
+			}
+			expectedBody := string(content)
+
 			assert.Equal(t, testCase.expected.code, recorder.Code)
-			assert.Equal(t, testCase.expected.body, recorder.Body.String())
+			assert.Equal(t, expectedBody, recorder.Body.String())
 		})
 	}
 }

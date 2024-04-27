@@ -1,0 +1,1 @@
+{"httpCode":422,"serviceCode":102,"detail":"The offset pagination parameter must be integer"}
