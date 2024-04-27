@@ -1,0 +1,1 @@
+{"httpCode":422,"serviceCode":100,"detail":"The limit pagination parameter must be integer"}
