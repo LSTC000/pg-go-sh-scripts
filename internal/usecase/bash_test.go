@@ -1,11 +1,13 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/model"
 	mock_service "pg-sh-scripts/internal/service/mock"
 	"pg-sh-scripts/internal/type/alias"
+	"pg-sh-scripts/internal/util"
 	"pg-sh-scripts/pkg/sql/pagination"
 	"testing"
 
@@ -84,6 +86,85 @@ func TestBashUseCase_GetBashById(t *testing.T) {
 			bash, err := bashUseCase.GetBashById(testCase.in.bashId)
 
 			assert.Equal(t, testCase.expected.bash, bash)
+			assert.Equal(t, testCase.expected.err, err)
+		})
+	}
+}
+
+func TestBashUseCase_GetBashFileBufferById(t *testing.T) {
+	type (
+		inStruct struct {
+			ctx      context.Context
+			bashId   uuid.UUID
+			bashBody string
+		}
+
+		expectedStruct struct {
+			bashFileBuffer *bytes.Buffer
+			bashTitle      alias.BashTitle
+			err            error
+		}
+	)
+
+	httpErrors := config.GetHTTPErrors()
+
+	testCases := []struct {
+		name         string
+		in           inStruct
+		mockBehavior func(*mock_service.MockIBashService, context.Context, uuid.UUID)
+		expected     expectedStruct
+	}{
+		{
+			name: "Success",
+			in: inStruct{
+				ctx:      context.Background(),
+				bashId:   uuid.NewV4(),
+				bashBody: "",
+			},
+			mockBehavior: func(m *mock_service.MockIBashService, ctx context.Context, bashId uuid.UUID) {
+				m.EXPECT().GetOneById(ctx, bashId).Return(&model.Bash{}, nil)
+			},
+			expected: expectedStruct{
+				bashFileBuffer: bytes.NewBufferString(""),
+				bashTitle:      "",
+				err:            nil,
+			},
+		},
+		{
+			name: "Getting bash does not exists error",
+			in: inStruct{
+				ctx:    context.Background(),
+				bashId: uuid.NewV4(),
+			},
+			mockBehavior: func(m *mock_service.MockIBashService, ctx context.Context, bashId uuid.UUID) {
+				m.EXPECT().GetOneById(ctx, bashId).Return(nil, httpErrors.BashDoesNotExists)
+			},
+			expected: expectedStruct{
+				bashFileBuffer: nil,
+				bashTitle:      "",
+				err:            httpErrors.BashDoesNotExists,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockBashService := mock_service.NewMockIBashService(ctrl)
+			testCase.mockBehavior(mockBashService, testCase.in.ctx, testCase.in.bashId)
+
+			bashUseCase := BashUseCase{
+				service:    mockBashService,
+				util:       util.GetBashUtil(),
+				httpErrors: httpErrors,
+			}
+
+			bashFileBuffer, bashTitle, err := bashUseCase.GetBashFileBufferById(testCase.in.bashId)
+
+			assert.Equal(t, testCase.expected.bashFileBuffer, bashFileBuffer)
+			assert.Equal(t, testCase.expected.bashTitle, bashTitle)
 			assert.Equal(t, testCase.expected.err, err)
 		})
 	}

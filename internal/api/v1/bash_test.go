@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"bytes"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -125,6 +126,122 @@ func TestBashHandler_GetBashById(t *testing.T) {
 			r.ServeHTTP(recorder, request)
 
 			assert.Equal(t, testCase.expected.code, recorder.Code)
+			assert.Equal(t, testCase.expected.body, recorder.Body.String())
+		})
+	}
+}
+
+func TestBashHandler_GetBashFileById(t *testing.T) {
+	type (
+		inStruct struct {
+			bashId  string
+			httpErr error
+		}
+
+		expectedStruct struct {
+			header http.Header
+			body   string
+			code   int
+		}
+	)
+
+	httpErrors := config.GetHTTPErrors()
+
+	testCases := []struct {
+		name         string
+		in           inStruct
+		mockBehavior func(*mock_usecase.MockIBashUseCase, *mock_api.MockIHelper, uuid.UUID, error)
+		expected     expectedStruct
+	}{
+		{
+			name: "Success",
+			in: inStruct{
+				bashId:  uuid.NewV4().String(),
+				httpErr: nil,
+			},
+			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, bashId uuid.UUID, err error) {
+				mu.EXPECT().GetBashFileBufferById(bashId).Return(&bytes.Buffer{}, "", nil)
+			},
+			expected: expectedStruct{
+				header: http.Header{
+					"Content-Disposition": []string{"attachment; filename=\".sh\""},
+					"Content-Length":      []string{"0"},
+					"Content-Type":        []string{"application/x-www-form-urlencoded"},
+				},
+				body: "",
+				code: http.StatusOK,
+			},
+		},
+		{
+			name: "Bash id must be uuid error",
+			in: inStruct{
+				bashId:  "uuid",
+				httpErr: httpErrors.BashId,
+			},
+			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, bashId uuid.UUID, err error) {
+				var httpErr *schema.HTTPError
+				errors.As(err, &httpErr)
+				mh.EXPECT().ParseError(err).Return(httpErr)
+			},
+			expected: expectedStruct{
+				header: http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
+				body:   `{"httpCode":422,"serviceCode":200,"detail":"The bash id must be of type uuid4 like 151a583c-0ea0-46b8-b8a6-6bdcdd51655a"}`,
+				code:   http.StatusUnprocessableEntity,
+			},
+		},
+		{
+			name: "Bash does not exists error",
+			in: inStruct{
+				bashId:  uuid.NewV4().String(),
+				httpErr: httpErrors.BashDoesNotExists,
+			},
+			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, bashId uuid.UUID, err error) {
+				var httpErr *schema.HTTPError
+				errors.As(err, &httpErr)
+
+				gomock.InOrder(
+					mu.EXPECT().GetBashFileBufferById(bashId).Return(nil, "", err),
+					mh.EXPECT().ParseError(err).Return(httpErr),
+				)
+			},
+			expected: expectedStruct{
+				header: http.Header{"Content-Type": []string{"application/json; charset=utf-8"}},
+				body:   `{"httpCode":404,"serviceCode":207,"detail":"The specified bash script does not exists"}`,
+				code:   http.StatusNotFound,
+			},
+		},
+	}
+
+	gin.SetMode(gin.TestMode)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockBashUseCase := mock_usecase.NewMockIBashUseCase(ctrl)
+			mockApiHelper := mock_api.NewMockIHelper(ctrl)
+			uuidBashId, _ := uuid.FromString(testCase.in.bashId)
+			testCase.mockBehavior(mockBashUseCase, mockApiHelper, uuidBashId, testCase.in.httpErr)
+
+			bashHandler := BashHandler{
+				useCase:    mockBashUseCase,
+				helper:     mockApiHelper,
+				httpErrors: httpErrors,
+			}
+
+			path := groupBashPath + getBashFileByIdPath
+			casePath := strings.Replace(path, ":id", testCase.in.bashId, 1)
+
+			r := gin.New()
+			r.GET(path, bashHandler.GetBashFileById)
+
+			recorder := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodGet, casePath, nil)
+
+			r.ServeHTTP(recorder, request)
+			assert.Equal(t, testCase.expected.code, recorder.Code)
+			assert.Equal(t, testCase.expected.header, recorder.Result().Header)
 			assert.Equal(t, testCase.expected.body, recorder.Body.String())
 		})
 	}
