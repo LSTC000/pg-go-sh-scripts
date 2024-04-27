@@ -64,7 +64,7 @@ func TestBashLogHandler_GetBashLogListByBashId(t *testing.T) {
 		{
 			name: "Bash id must be uuid error",
 			in: inStruct{
-				bashId:           "",
+				bashId:           "uuid",
 				paginationParams: pagination.LimitOffsetParams{},
 				httpErr:          httpErrors.BashId,
 				limitExists:      true,

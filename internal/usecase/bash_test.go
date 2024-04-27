@@ -2,13 +2,14 @@ package usecase
 
 import (
 	"context"
-	uuid "github.com/satori/go.uuid"
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/model"
 	mock_service "pg-sh-scripts/internal/service/mock"
 	"pg-sh-scripts/internal/type/alias"
 	"pg-sh-scripts/pkg/sql/pagination"
 	"testing"
+
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
