@@ -14,6 +14,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+//go:generate mockgen -source=./gosha.go  -destination=./mock/gosha.go
+
 type (
 	ICustomGoshaExec interface {
 		Run()

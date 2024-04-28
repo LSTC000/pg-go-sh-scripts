@@ -9,6 +9,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+//go:generate mockgen -source=./helper.go  -destination=./mock/helper.go
+
 const (
 	tmpDir        = "tmp"
 	bashExtension = ".sh"
