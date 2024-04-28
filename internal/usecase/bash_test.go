@@ -3,11 +3,14 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"mime/multipart"
 	"pg-sh-scripts/internal/config"
+	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/model"
 	mock_service "pg-sh-scripts/internal/service/mock"
 	"pg-sh-scripts/internal/type/alias"
 	"pg-sh-scripts/internal/util"
+	mock_util "pg-sh-scripts/internal/util/mock"
 	"pg-sh-scripts/pkg/sql/pagination"
 	"testing"
 
@@ -237,6 +240,185 @@ func TestBashUseCase_GetBashPaginationPage(t *testing.T) {
 			bashLogPaginationPage, err := bashUseCase.GetBashPaginationPage(testCase.in.paginationParams)
 
 			assert.Equal(t, testCase.expected.paginationPage, bashLogPaginationPage)
+			assert.Equal(t, testCase.expected.err, err)
+		})
+	}
+}
+
+func TestBashUseCase_CreateBash(t *testing.T) {
+	type (
+		inStruct struct {
+			ctx  context.Context
+			file *multipart.FileHeader
+			dto  dto.CreateBash
+		}
+
+		expectedStruct struct {
+			bash *model.Bash
+			err  error
+		}
+	)
+
+	httpErrors := config.GetHTTPErrors()
+
+	testCases := []struct {
+		name         string
+		in           inStruct
+		mockBehavior func(*mock_service.MockIBashService, *mock_util.MockIBashUtil, context.Context, *multipart.FileHeader, dto.CreateBash)
+		expected     expectedStruct
+	}{
+		{
+			name: "Success",
+			in: inStruct{
+				ctx:  context.Background(),
+				file: &multipart.FileHeader{},
+				dto: dto.CreateBash{
+					Title: "title",
+					Body:  "body",
+				},
+			},
+			mockBehavior: func(ms *mock_service.MockIBashService, mu *mock_util.MockIBashUtil, ctx context.Context, file *multipart.FileHeader, dto dto.CreateBash) {
+				gomock.InOrder(
+					mu.EXPECT().GetBashFileExtension(file.Filename).Return(".sh"),
+					mu.EXPECT().ValidateBashFileExtension(".sh").Return(true),
+					mu.EXPECT().GetBashFileTitle(file.Filename).Return(dto.Title),
+					mu.EXPECT().GetBashFileBody(file).Return(dto.Body, nil),
+					ms.EXPECT().Create(ctx, dto).Return(&model.Bash{}, nil),
+				)
+			},
+			expected: expectedStruct{
+				bash: &model.Bash{},
+				err:  nil,
+			},
+		},
+		{
+			name: "Invalid bash file extension error",
+			in: inStruct{
+				ctx:  context.Background(),
+				file: &multipart.FileHeader{},
+				dto:  dto.CreateBash{},
+			},
+			mockBehavior: func(ms *mock_service.MockIBashService, mu *mock_util.MockIBashUtil, ctx context.Context, file *multipart.FileHeader, dto dto.CreateBash) {
+				gomock.InOrder(
+					mu.EXPECT().GetBashFileExtension(file.Filename).Return(".sh"),
+					mu.EXPECT().ValidateBashFileExtension(".sh").Return(false),
+				)
+			},
+			expected: expectedStruct{
+				bash: nil,
+				err:  httpErrors.BashFileExtension,
+			},
+		},
+		{
+			name: "Empty bash title error",
+			in: inStruct{
+				ctx:  context.Background(),
+				file: &multipart.FileHeader{},
+				dto: dto.CreateBash{
+					Title: "",
+				},
+			},
+			mockBehavior: func(ms *mock_service.MockIBashService, mu *mock_util.MockIBashUtil, ctx context.Context, file *multipart.FileHeader, dto dto.CreateBash) {
+				gomock.InOrder(
+					mu.EXPECT().GetBashFileExtension(file.Filename).Return(".sh"),
+					mu.EXPECT().ValidateBashFileExtension(".sh").Return(true),
+					mu.EXPECT().GetBashFileTitle(file.Filename).Return(dto.Title),
+				)
+			},
+			expected: expectedStruct{
+				bash: nil,
+				err:  httpErrors.BashFileTitle,
+			},
+		},
+		{
+			name: "Getting bash body error",
+			in: inStruct{
+				ctx:  context.Background(),
+				file: &multipart.FileHeader{},
+				dto: dto.CreateBash{
+					Title: "title",
+				},
+			},
+			mockBehavior: func(ms *mock_service.MockIBashService, mu *mock_util.MockIBashUtil, ctx context.Context, file *multipart.FileHeader, dto dto.CreateBash) {
+				gomock.InOrder(
+					mu.EXPECT().GetBashFileExtension(file.Filename).Return(".sh"),
+					mu.EXPECT().ValidateBashFileExtension(".sh").Return(true),
+					mu.EXPECT().GetBashFileTitle(file.Filename).Return(dto.Title),
+					mu.EXPECT().GetBashFileBody(file).Return(dto.Body, httpErrors.BashGetFileBody),
+				)
+			},
+			expected: expectedStruct{
+				bash: nil,
+				err:  httpErrors.BashGetFileBody,
+			},
+		},
+		{
+			name: "Empty bash body error",
+			in: inStruct{
+				ctx:  context.Background(),
+				file: &multipart.FileHeader{},
+				dto: dto.CreateBash{
+					Title: "title",
+					Body:  "",
+				},
+			},
+			mockBehavior: func(ms *mock_service.MockIBashService, mu *mock_util.MockIBashUtil, ctx context.Context, file *multipart.FileHeader, dto dto.CreateBash) {
+				gomock.InOrder(
+					mu.EXPECT().GetBashFileExtension(file.Filename).Return(".sh"),
+					mu.EXPECT().ValidateBashFileExtension(".sh").Return(true),
+					mu.EXPECT().GetBashFileTitle(file.Filename).Return(dto.Title),
+					mu.EXPECT().GetBashFileBody(file).Return(dto.Body, nil),
+				)
+			},
+			expected: expectedStruct{
+				bash: nil,
+				err:  httpErrors.BashFileBody,
+			},
+		},
+		{
+			name: "Creating bash error",
+			in: inStruct{
+				ctx:  context.Background(),
+				file: &multipart.FileHeader{},
+				dto: dto.CreateBash{
+					Title: "title",
+					Body:  "body",
+				},
+			},
+			mockBehavior: func(ms *mock_service.MockIBashService, mu *mock_util.MockIBashUtil, ctx context.Context, file *multipart.FileHeader, dto dto.CreateBash) {
+				gomock.InOrder(
+					mu.EXPECT().GetBashFileExtension(file.Filename).Return(".sh"),
+					mu.EXPECT().ValidateBashFileExtension(".sh").Return(true),
+					mu.EXPECT().GetBashFileTitle(file.Filename).Return(dto.Title),
+					mu.EXPECT().GetBashFileBody(file).Return(dto.Body, nil),
+					ms.EXPECT().Create(ctx, dto).Return(nil, httpErrors.BashCreate),
+				)
+			},
+			expected: expectedStruct{
+				bash: nil,
+				err:  httpErrors.BashCreate,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockBashService := mock_service.NewMockIBashService(ctrl)
+			mockBashUtil := mock_util.NewMockIBashUtil(ctrl)
+			testCase.mockBehavior(mockBashService, mockBashUtil, testCase.in.ctx, testCase.in.file, testCase.in.dto)
+
+			bashUseCase := BashUseCase{
+				service:    mockBashService,
+				util:       mockBashUtil,
+				httpErrors: httpErrors,
+			}
+
+			bash, err := bashUseCase.CreateBash(testCase.in.file)
+
+			assert.Equal(t, testCase.expected.bash, bash)
 			assert.Equal(t, testCase.expected.err, err)
 		})
 	}
