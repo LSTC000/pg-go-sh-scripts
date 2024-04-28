@@ -6,34 +6,31 @@ const (
 
 type (
 	IExec interface {
-		Run() error
-		SyncRun() []error
+		Run(IScanner, []ICmd) error
+		SyncRun(IScanner, []ICmd) []error
 	}
 
-	Exec struct {
-		Scanner  IScanner
-		Commands []ICmd
-	}
+	Exec struct{}
 )
 
-func (e *Exec) Run() error {
-	for _, cmd := range e.Commands {
-		if err := cmd.run(e.Scanner); err != nil {
+func (e *Exec) Run(scanner IScanner, commands []ICmd) error {
+	for _, cmd := range commands {
+		if err := cmd.run(scanner); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (e *Exec) SyncRun() []error {
-	commandsCount := len(e.Commands)
+func (e *Exec) SyncRun(scanner IScanner, commands []ICmd) []error {
+	commandsCount := len(commands)
 
 	errPool := make([]error, 0, commandsCount)
 	errCh := make(chan error)
 	defer close(errCh)
 
-	for _, cmd := range e.Commands {
-		go cmd.syncRun(e.Scanner, errCh)
+	for _, cmd := range commands {
+		go cmd.syncRun(scanner, errCh)
 	}
 
 	for i := 0; i < commandsCount; i++ {
@@ -49,9 +46,6 @@ func (e *Exec) SyncRun() []error {
 	return nil
 }
 
-func GetExec(scanner IScanner, commands []ICmd) IExec {
-	return &Exec{
-		Scanner:  scanner,
-		Commands: commands,
-	}
+func GetExec() IExec {
+	return &Exec{}
 }

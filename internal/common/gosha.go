@@ -18,11 +18,10 @@ import (
 
 type (
 	ICustomGoshaExec interface {
-		Run()
+		Run(isSync bool, commands []gosha.ICmd)
 	}
 
 	CustomGoshaExec struct {
-		isSync    bool
 		goshaExec gosha.IExec
 		logger    *logging.Logger
 	}
@@ -50,15 +49,15 @@ func (c *CustomGoshaExec) saveExecError(err error) {
 	}
 }
 
-func (c *CustomGoshaExec) Run() {
-	if c.isSync {
-		if errs := c.goshaExec.SyncRun(); errs != nil {
+func (c *CustomGoshaExec) Run(isSync bool, commands []gosha.ICmd) {
+	if isSync {
+		if errs := c.goshaExec.SyncRun(&CustomScanner{}, commands); errs != nil {
 			for _, err := range errs {
 				c.saveExecError(err)
 			}
 		}
 	} else {
-		if err := c.goshaExec.Run(); err != nil {
+		if err := c.goshaExec.Run(&CustomScanner{}, commands); err != nil {
 			c.saveExecError(err)
 		}
 	}
@@ -88,10 +87,9 @@ func (s *CustomScanner) Scan(stdout io.ReadCloser, cmd *gosha.Cmd) error {
 	return nil
 }
 
-func GetCustomGoshaExec(isSync bool, commands []gosha.ICmd) ICustomGoshaExec {
+func GetCustomGoshaExec() ICustomGoshaExec {
 	return &CustomGoshaExec{
-		isSync:    isSync,
-		goshaExec: gosha.GetExec(&CustomScanner{}, commands),
+		goshaExec: gosha.GetExec(),
 		logger:    log.GetLogger(),
 	}
 }

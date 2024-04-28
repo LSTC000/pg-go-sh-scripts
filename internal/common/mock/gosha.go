@@ -5,6 +5,7 @@
 package mock_common
 
 import (
+	gosha "pg-sh-scripts/pkg/gosha"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,13 +35,13 @@ func (m *MockICustomGoshaExec) EXPECT() *MockICustomGoshaExecMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockICustomGoshaExec) Run() {
+func (m *MockICustomGoshaExec) Run(isSync bool, commands []gosha.ICmd) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Run")
+	m.ctrl.Call(m, "Run", isSync, commands)
 }
 
 // Run indicates an expected call of Run.
-func (mr *MockICustomGoshaExecMockRecorder) Run() *gomock.Call {
+func (mr *MockICustomGoshaExecMockRecorder) Run(isSync, commands interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockICustomGoshaExec)(nil).Run))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockICustomGoshaExec)(nil).Run), isSync, commands)
 }

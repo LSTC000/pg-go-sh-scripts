@@ -32,10 +32,11 @@ type (
 	}
 
 	BashUseCase struct {
-		service     service.IBashService
-		util        util.IBashUtil
-		goshaHelper gosha.IHelper
-		httpErrors  *config.HTTPErrors
+		service         service.IBashService
+		util            util.IBashUtil
+		goshaHelper     gosha.IHelper
+		customGoshaExec common.ICustomGoshaExec
+		httpErrors      *config.HTTPErrors
 	}
 )
 
@@ -131,8 +132,7 @@ func (u *BashUseCase) ExecBashList(isSync bool, dto []dto.ExecBash) error {
 		}
 	}()
 
-	customGoshaExec := common.GetCustomGoshaExec(isSync, commands)
-	customGoshaExec.Run()
+	u.customGoshaExec.Run(isSync, commands)
 
 	return nil
 }
@@ -153,9 +153,10 @@ func (u *BashUseCase) RemoveBashById(bashId uuid.UUID) (*model.Bash, error) {
 
 func GeBashUseCase() IBashUseCase {
 	return &BashUseCase{
-		service:     service.GetBashService(),
-		util:        util.GetBashUtil(),
-		goshaHelper: gosha.GetHelper(),
-		httpErrors:  config.GetHTTPErrors(),
+		service:         service.GetBashService(),
+		util:            util.GetBashUtil(),
+		goshaHelper:     gosha.GetHelper(),
+		customGoshaExec: common.GetCustomGoshaExec(),
+		httpErrors:      config.GetHTTPErrors(),
 	}
 }
