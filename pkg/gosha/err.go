@@ -27,7 +27,7 @@ func ErrFmt(group ErrGroup, err error) string {
 	return fmt.Sprintf("%s error: %s", group, err)
 }
 
-func GetExecErr(cmd Cmd, detail string) error {
+func GetExecErr(cmd *Cmd, detail string) error {
 	return &ExecErr{
 		Title:  cmd.Title,
 		Path:   cmd.Path,

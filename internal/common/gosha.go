@@ -62,7 +62,7 @@ func (c *CustomGoshaExec) Run() {
 	}
 }
 
-func (s *CustomScanner) Scan(stdout io.ReadCloser, cmd gosha.Cmd) error {
+func (s *CustomScanner) Scan(stdout io.ReadCloser, cmd *gosha.Cmd) error {
 	scanner := bufio.NewScanner(stdout)
 	bashLogService := service.GetBashLogService()
 
@@ -86,7 +86,7 @@ func (s *CustomScanner) Scan(stdout io.ReadCloser, cmd gosha.Cmd) error {
 	return nil
 }
 
-func GetCustomGoshaExec(isSync bool, commands []gosha.Cmd) ICustomGoshaExec {
+func GetCustomGoshaExec(isSync bool, commands []gosha.ICmd) ICustomGoshaExec {
 	return &CustomGoshaExec{
 		isSync:    isSync,
 		goshaExec: gosha.GetExec(&CustomScanner{}, commands),

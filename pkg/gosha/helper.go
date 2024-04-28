@@ -14,7 +14,16 @@ const (
 	bashExtension = ".sh"
 )
 
-func GetTmpFile(body string) (*os.File, error) {
+type (
+	IHelper interface {
+		GetTmpFile(string) (*os.File, error)
+		RemoveTmpFile(*os.File) error
+	}
+
+	Helper struct{}
+)
+
+func (h *Helper) GetTmpFile(body string) (*os.File, error) {
 	fileName := fmt.Sprintf("%v-%d%s", uuid.NewV4(), time.Now().Unix(), bashExtension)
 	tmpPath := path.Join(tmpDir, fileName)
 
@@ -47,9 +56,13 @@ func GetTmpFile(body string) (*os.File, error) {
 	return f, nil
 }
 
-func RemoveTmpFile(f *os.File) error {
+func (h *Helper) RemoveTmpFile(f *os.File) error {
 	if err := os.Remove(f.Name()); err != nil {
 		return err
 	}
 	return nil
+}
+
+func GetHelper() IHelper {
+	return &Helper{}
 }

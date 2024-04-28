@@ -32,9 +32,10 @@ type (
 	}
 
 	BashUseCase struct {
-		service    service.IBashService
-		util       util.IBashUtil
-		httpErrors *config.HTTPErrors
+		service     service.IBashService
+		util        util.IBashUtil
+		goshaHelper gosha.IHelper
+		httpErrors  *config.HTTPErrors
 	}
 )
 
@@ -105,19 +106,19 @@ func (u *BashUseCase) ExecBashList(isSync bool, dto []dto.ExecBash) error {
 	}
 
 	tmpFiles := make([]*os.File, 0, execBashCount)
-	commands := make([]gosha.Cmd, 0, execBashCount)
+	commands := make([]gosha.ICmd, 0, execBashCount)
 
 	for i := 0; i < execBashCount; i++ {
 		bash := bashList[i]
 		execBashDTO := dto[i]
 
-		tmpFile, err := gosha.GetTmpFile(bash.Body)
+		tmpFile, err := u.goshaHelper.GetTmpFile(bash.Body)
 		if err != nil {
 			return u.httpErrors.BashExecute
 		}
 		tmpFiles = append(tmpFiles, tmpFile)
 
-		cmd := gosha.Cmd{
+		cmd := &gosha.Cmd{
 			Title:   bash.Id.String(),
 			Path:    tmpFile.Name(),
 			Timeout: execBashDTO.TimeoutSeconds * time.Second,
@@ -126,7 +127,7 @@ func (u *BashUseCase) ExecBashList(isSync bool, dto []dto.ExecBash) error {
 	}
 	defer func() {
 		for _, tmpFile := range tmpFiles {
-			_ = gosha.RemoveTmpFile(tmpFile)
+			_ = u.goshaHelper.RemoveTmpFile(tmpFile)
 		}
 	}()
 
@@ -152,8 +153,9 @@ func (u *BashUseCase) RemoveBashById(bashId uuid.UUID) (*model.Bash, error) {
 
 func GeBashUseCase() IBashUseCase {
 	return &BashUseCase{
-		service:    service.GetBashService(),
-		util:       util.GetBashUtil(),
-		httpErrors: config.GetHTTPErrors(),
+		service:     service.GetBashService(),
+		util:        util.GetBashUtil(),
+		goshaHelper: gosha.GetHelper(),
+		httpErrors:  config.GetHTTPErrors(),
 	}
 }
