@@ -21,6 +21,7 @@ type HTTPErrors struct {
 	BashCreate            error
 	BashDoesNotExists     error
 	BashGetPaginationPage error
+	BashExecuteIsSync     error
 	BashExecuteDTOList    error
 	BashExecute           error
 	BashRemove            error
@@ -116,19 +117,24 @@ func setHTTPErrors(errors *HTTPErrors) {
 		ServiceCode: 208,
 		Detail:      "An error occurred while receiving the pagination page of bash scripts",
 	}
-	errors.BashExecuteDTOList = &schema.HTTPError{
+	errors.BashExecuteIsSync = &schema.HTTPError{
 		HTTPCode:    http.StatusUnprocessableEntity,
 		ServiceCode: 209,
+		Detail:      "The isSync executing parameter must be bool",
+	}
+	errors.BashExecuteDTOList = &schema.HTTPError{
+		HTTPCode:    http.StatusUnprocessableEntity,
+		ServiceCode: 210,
 		Detail:      "Invalid body of the request to start executing bash scripts",
 	}
 	errors.BashExecute = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 210,
+		ServiceCode: 211,
 		Detail:      "An error occurred while executing the bash script",
 	}
 	errors.BashRemove = &schema.HTTPError{
 		HTTPCode:    http.StatusBadRequest,
-		ServiceCode: 211,
+		ServiceCode: 212,
 		Detail:      "An error occurred while deleting the bash script",
 	}
 

@@ -200,7 +200,12 @@ func (h *BashHandler) CreateBash(c *gin.Context) {
 // @Param execute body []dto.ExecBash true "List of execute bash script models"
 // @Router /bash/execute/list [post]
 func (h *BashHandler) ExecBashList(c *gin.Context) {
-	isSync := c.GetBool("isSync")
+	isSync, err := strconv.ParseBool(c.Query("isSync"))
+	if err != nil {
+		httpError := h.helper.ParseError(h.httpErrors.BashExecuteIsSync)
+		c.JSON(httpError.HTTPCode, httpError)
+		return
+	}
 
 	execBashDTOList := make([]dto.ExecBash, 0)
 

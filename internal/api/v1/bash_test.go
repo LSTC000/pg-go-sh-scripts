@@ -2,6 +2,7 @@ package v1
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
 	"mime/multipart"
@@ -11,6 +12,7 @@ import (
 	"path"
 	mock_api "pg-sh-scripts/internal/api/mock"
 	"pg-sh-scripts/internal/config"
+	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/model"
 	"pg-sh-scripts/internal/schema"
 	"pg-sh-scripts/internal/type/alias"
@@ -395,8 +397,11 @@ func TestBashHandler_GetBashList(t *testing.T) {
 			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, paginationParams pagination.LimitOffsetParams, err error) {
 				var httpErr *schema.HTTPError
 				errors.As(err, &httpErr)
-				mu.EXPECT().GetBashPaginationPage(paginationParams).Return(alias.BashLimitOffsetPage{}, err)
-				mh.EXPECT().ParseError(err).Return(httpErr)
+
+				gomock.InOrder(
+					mu.EXPECT().GetBashPaginationPage(paginationParams).Return(alias.BashLimitOffsetPage{}, err),
+					mh.EXPECT().ParseError(err).Return(httpErr),
+				)
 			},
 			expected: expectedStruct{
 				golden: "get_pagination_page_error",
@@ -513,6 +518,7 @@ func TestBashHandler_CreateBash(t *testing.T) {
 			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, err error) {
 				var httpErr *schema.HTTPError
 				errors.As(err, &httpErr)
+
 				gomock.InOrder(
 					mu.EXPECT().CreateBash(gomock.Any()).Return(nil, err),
 					mh.EXPECT().ParseError(err).Return(httpErr),
@@ -585,6 +591,164 @@ func TestBashHandler_CreateBash(t *testing.T) {
 			} else {
 				recorder = httptest.NewRecorder()
 				request = httptest.NewRequest(http.MethodPost, handlerPath, nil)
+			}
+
+			r.ServeHTTP(recorder, request)
+
+			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
+			if err != nil {
+				t.Fatalf("%s Error: %s", t.Name(), err)
+			}
+			expectedBody := string(content)
+
+			assert.Equal(t, testCase.expected.code, recorder.Code)
+			assert.Equal(t, expectedBody, recorder.Body.String())
+		})
+	}
+}
+
+func TestBashHandler_ExecBashList(t *testing.T) {
+	type (
+		inStruct struct {
+			isSync       bool
+			dto          []dto.ExecBash
+			httpErr      error
+			isSyncExists bool
+			isDTOExists  bool
+		}
+
+		expectedStruct struct {
+			golden string
+			code   int
+		}
+	)
+
+	httpErrors := config.GetHTTPErrors()
+
+	testCases := []struct {
+		name         string
+		in           inStruct
+		mockBehavior func(*mock_usecase.MockIBashUseCase, *mock_api.MockIHelper, bool, []dto.ExecBash, error)
+		expected     expectedStruct
+	}{
+		{
+			name: "Success",
+			in: inStruct{
+				isSync:       true,
+				dto:          make([]dto.ExecBash, 1),
+				httpErr:      nil,
+				isSyncExists: true,
+				isDTOExists:  true,
+			},
+			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, isSync bool, dto []dto.ExecBash, err error) {
+				mu.EXPECT().ExecBashList(isSync, dto).Return(nil)
+			},
+			expected: expectedStruct{
+				golden: "exec_scripts",
+				code:   http.StatusOK,
+			},
+		},
+		{
+			name: "Validation isSync param error",
+			in: inStruct{
+				isSync:       true,
+				dto:          make([]dto.ExecBash, 1),
+				httpErr:      httpErrors.BashExecuteIsSync,
+				isSyncExists: false,
+				isDTOExists:  true,
+			},
+			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, isSync bool, dto []dto.ExecBash, err error) {
+				var httpErr *schema.HTTPError
+				errors.As(err, &httpErr)
+				mh.EXPECT().ParseError(err).Return(httpErr)
+			},
+			expected: expectedStruct{
+				golden: "bash_execute_is_sync_error",
+				code:   http.StatusUnprocessableEntity,
+			},
+		},
+		{
+			name: "Validation exec body error",
+			in: inStruct{
+				isSync:       true,
+				dto:          make([]dto.ExecBash, 1),
+				httpErr:      httpErrors.BashExecuteDTOList,
+				isSyncExists: true,
+				isDTOExists:  false,
+			},
+			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, isSync bool, dto []dto.ExecBash, err error) {
+				var httpErr *schema.HTTPError
+				errors.As(err, &httpErr)
+				mh.EXPECT().ParseError(err).Return(httpErr)
+			},
+			expected: expectedStruct{
+				golden: "bash_execute_dto_list_error",
+				code:   http.StatusUnprocessableEntity,
+			},
+		},
+		{
+			name: "Executing bash error",
+			in: inStruct{
+				isSync:       true,
+				dto:          make([]dto.ExecBash, 1),
+				httpErr:      httpErrors.BashExecute,
+				isSyncExists: true,
+				isDTOExists:  true,
+			},
+			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, isSync bool, dto []dto.ExecBash, err error) {
+				var httpErr *schema.HTTPError
+				errors.As(err, &httpErr)
+
+				gomock.InOrder(
+					mu.EXPECT().ExecBashList(isSync, dto).Return(err),
+					mh.EXPECT().ParseError(err).Return(httpErr),
+				)
+			},
+			expected: expectedStruct{
+				golden: "executing_bash_error",
+				code:   http.StatusBadRequest,
+			},
+		},
+	}
+
+	gin.SetMode(gin.TestMode)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockBashUseCase := mock_usecase.NewMockIBashUseCase(ctrl)
+			mockApiHelper := mock_api.NewMockIHelper(ctrl)
+			testCase.mockBehavior(mockBashUseCase, mockApiHelper, testCase.in.isSync, testCase.in.dto, testCase.in.httpErr)
+
+			bashHandler := BashHandler{
+				useCase:    mockBashUseCase,
+				helper:     mockApiHelper,
+				httpErrors: httpErrors,
+			}
+
+			handlerPath := groupBashPath + execBashListPath
+
+			r := gin.New()
+			r.POST(handlerPath, bashHandler.ExecBashList)
+
+			var b bytes.Buffer
+			if testCase.in.isDTOExists {
+				body, err := json.Marshal(testCase.in.dto)
+				if err != nil {
+					t.Fatalf("%s Error: %s", t.Name(), err)
+				}
+				b.Write(body)
+			}
+
+			recorder := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodPost, handlerPath, &b)
+
+			if testCase.in.isSyncExists {
+				requestQueryParams := request.URL.Query()
+				requestQueryParams.Add("isSync", strconv.FormatBool(testCase.in.isSync))
+				request.URL.RawQuery = requestQueryParams.Encode()
 			}
 
 			r.ServeHTTP(recorder, request)
