@@ -32,6 +32,10 @@ app-start:
 
 
 # --================ Code Style ================--
+.PHONY: style-run
+style-run:
+	goimports -w -l ./.. && gofmt -w -l ./.. && golines -w --no-chain-split-dots ./.. && golangci-lint run
+
 .PHONY: import-run
 import-run:
 	goimports -w -l ./..
@@ -39,6 +43,10 @@ import-run:
 .PHONY: fmt-run
 fmt-run:
 	gofmt -w -l ./..
+
+.PHONY: lines-run
+lines-run:
+	golines -w --no-chain-split-dots ./..
 
 .PHONY: lint-run
 lint-run:
