@@ -106,8 +106,16 @@ func (h *BashHandler) GetBashFileById(c *gin.Context) {
 		return
 	}
 
-	extraHeaders := map[string]string{"Content-Disposition": fmt.Sprintf("attachment; filename=\"%s.sh\"", bashTitle)}
-	c.DataFromReader(http.StatusOK, int64(bashFileBuffer.Len()), "application/x-www-form-urlencoded", bashFileBuffer, extraHeaders)
+	extraHeaders := map[string]string{
+		"Content-Disposition": fmt.Sprintf("attachment; filename=\"%s.sh\"", bashTitle),
+	}
+	c.DataFromReader(
+		http.StatusOK,
+		int64(bashFileBuffer.Len()),
+		"application/x-www-form-urlencoded",
+		bashFileBuffer,
+		extraHeaders,
+	)
 }
 
 // GetBashList

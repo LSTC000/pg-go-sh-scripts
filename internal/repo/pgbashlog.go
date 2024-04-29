@@ -25,7 +25,11 @@ type PgBashLogRepository struct {
 	logger *logging.Logger
 }
 
-func (p PgBashLogRepository) GetPaginationPageByBashId(ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (alias.BashLogLimitOffsetPage, error) {
+func (p PgBashLogRepository) GetPaginationPageByBashId(
+	ctx context.Context,
+	bashId uuid.UUID,
+	paginationParams pagination.LimitOffsetParams,
+) (alias.BashLogLimitOffsetPage, error) {
 	var bashLogPaginationPage alias.BashLogLimitOffsetPage
 
 	p.logger.Debug(fmt.Sprintf("Start getting bash log pagination page by bash id: %v", bashId))
@@ -38,11 +42,25 @@ func (p PgBashLogRepository) GetPaginationPageByBashId(ctx context.Context, bash
 		    bash_id = $1
 	`
 
-	bashLogPaginationPage, err := pagination.Paginate[*model.BashLog](ctx, p.db, q, paginationParams, bashId)
+	bashLogPaginationPage, err := pagination.Paginate[*model.BashLog](
+		ctx,
+		p.db,
+		q,
+		paginationParams,
+		bashId,
+	)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Getting bash log pagination page by bash id: %v Error: %s, Detail: %s, Where: %s", bashId, pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(
+				fmt.Sprintf(
+					"Getting bash log pagination page by bash id: %v Error: %s, Detail: %s, Where: %s",
+					bashId,
+					pgErr.Message,
+					pgErr.Detail,
+					pgErr.Where,
+				),
+			)
 		} else {
 			p.logger.Error(fmt.Sprintf("Getting bash log pagination page by bash id: %v Error: %s", bashId, err))
 		}
@@ -53,7 +71,10 @@ func (p PgBashLogRepository) GetPaginationPageByBashId(ctx context.Context, bash
 	return bashLogPaginationPage, nil
 }
 
-func (p PgBashLogRepository) Create(ctx context.Context, dto dto.CreateBashLog) (*model.BashLog, error) {
+func (p PgBashLogRepository) Create(
+	ctx context.Context,
+	dto dto.CreateBashLog,
+) (*model.BashLog, error) {
 	bashLog := &model.BashLog{}
 
 	p.logger.Debug(fmt.Sprintf("Start creating bash log by bash id: %v", dto.BashId))
@@ -68,7 +89,15 @@ func (p PgBashLogRepository) Create(ctx context.Context, dto dto.CreateBashLog) 
 	if err := pgxscan.Get(ctx, p.db, bashLog, stmt, dto.BashId, dto.Body, dto.IsError); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Creating bash log by bash id: %v Error: %s, Detail: %s, Where: %s", dto.BashId, pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(
+				fmt.Sprintf(
+					"Creating bash log by bash id: %v Error: %s, Detail: %s, Where: %s",
+					dto.BashId,
+					pgErr.Message,
+					pgErr.Detail,
+					pgErr.Where,
+				),
+			)
 		} else {
 			p.logger.Error(fmt.Sprintf("Creating bash log by bash id: %v Error: %s", dto.BashId, err))
 		}

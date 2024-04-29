@@ -58,7 +58,13 @@ func TestBashLogHandler_GetBashLogListByBashId(t *testing.T) {
 				offsetExists:     true,
 			},
 			mockBehavior: func(mu *mock_usecase.MockIBashLogUseCase, mh *mock_api.MockIHelper, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams, err error) {
-				mu.EXPECT().GetBashLogPaginationPageByBashId(bashId, paginationParams).Return(alias.BashLogLimitOffsetPage{}, nil)
+				mu.EXPECT().GetBashLogPaginationPageByBashId(
+					bashId,
+					paginationParams,
+				).Return(
+					alias.BashLogLimitOffsetPage{},
+					nil,
+				)
 			},
 			expected: expectedStruct{
 				golden: "default_pagination_page",
@@ -177,7 +183,13 @@ func TestBashLogHandler_GetBashLogListByBashId(t *testing.T) {
 				var httpErr *schema.HTTPError
 				errors.As(err, &httpErr)
 				gomock.InOrder(
-					mu.EXPECT().GetBashLogPaginationPageByBashId(bashId, paginationParams).Return(alias.BashLogLimitOffsetPage{}, err),
+					mu.EXPECT().GetBashLogPaginationPageByBashId(
+						bashId,
+						paginationParams,
+					).Return(
+						alias.BashLogLimitOffsetPage{},
+						err,
+					),
 					mh.EXPECT().ParseError(err).Return(httpErr),
 				)
 			},
@@ -198,7 +210,13 @@ func TestBashLogHandler_GetBashLogListByBashId(t *testing.T) {
 			mockBashLogUseCase := mock_usecase.NewMockIBashLogUseCase(ctrl)
 			mockApiHelper := mock_api.NewMockIHelper(ctrl)
 			uuidBashId, _ := uuid.FromString(testCase.in.bashId)
-			testCase.mockBehavior(mockBashLogUseCase, mockApiHelper, uuidBashId, testCase.in.paginationParams, testCase.in.httpErr)
+			testCase.mockBehavior(
+				mockBashLogUseCase,
+				mockApiHelper,
+				uuidBashId,
+				testCase.in.paginationParams,
+				testCase.in.httpErr,
+			)
 
 			bashLogHandler := BashLogHandler{
 				useCase:    mockBashLogUseCase,
@@ -226,7 +244,9 @@ func TestBashLogHandler_GetBashLogListByBashId(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashlogTestDataDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(
+				path.Join(bashlogTestDataDir, testCase.expected.golden+".golden"),
+			)
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}

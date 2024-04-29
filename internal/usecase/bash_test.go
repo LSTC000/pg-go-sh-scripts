@@ -210,7 +210,13 @@ func TestBashUseCase_GetBashPaginationPage(t *testing.T) {
 				paginationParams: pagination.LimitOffsetParams{},
 			},
 			mockBehavior: func(m *mock_service.MockIBashService, ctx context.Context, paginationParams pagination.LimitOffsetParams) {
-				m.EXPECT().GetPaginationPage(ctx, paginationParams).Return(alias.BashLimitOffsetPage{}, nil)
+				m.EXPECT().GetPaginationPage(
+					ctx,
+					paginationParams,
+				).Return(
+					alias.BashLimitOffsetPage{},
+					nil,
+				)
 			},
 			expected: expectedStruct{
 				paginationPage: alias.BashLimitOffsetPage{},
@@ -224,7 +230,13 @@ func TestBashUseCase_GetBashPaginationPage(t *testing.T) {
 				paginationParams: pagination.LimitOffsetParams{},
 			},
 			mockBehavior: func(m *mock_service.MockIBashService, ctx context.Context, paginationParams pagination.LimitOffsetParams) {
-				m.EXPECT().GetPaginationPage(ctx, paginationParams).Return(alias.BashLimitOffsetPage{}, httpErrors.BashGetPaginationPage)
+				m.EXPECT().GetPaginationPage(
+					ctx,
+					paginationParams,
+				).Return(
+					alias.BashLimitOffsetPage{},
+					httpErrors.BashGetPaginationPage,
+				)
 			},
 			expected: expectedStruct{
 				paginationPage: alias.BashLimitOffsetPage{},
@@ -246,7 +258,9 @@ func TestBashUseCase_GetBashPaginationPage(t *testing.T) {
 				httpErrors: httpErrors,
 			}
 
-			bashLogPaginationPage, err := bashUseCase.GetBashPaginationPage(testCase.in.paginationParams)
+			bashLogPaginationPage, err := bashUseCase.GetBashPaginationPage(
+				testCase.in.paginationParams,
+			)
 
 			assert.Equal(t, testCase.expected.paginationPage, bashLogPaginationPage)
 			assert.Equal(t, testCase.expected.err, err)
@@ -417,7 +431,13 @@ func TestBashUseCase_CreateBash(t *testing.T) {
 
 			mockBashService := mock_service.NewMockIBashService(ctrl)
 			mockBashUtil := mock_util.NewMockIBashUtil(ctrl)
-			testCase.mockBehavior(mockBashService, mockBashUtil, testCase.in.ctx, testCase.in.file, testCase.in.dto)
+			testCase.mockBehavior(
+				mockBashService,
+				mockBashUtil,
+				testCase.in.ctx,
+				testCase.in.file,
+				testCase.in.dto,
+			)
 
 			bashUseCase := BashUseCase{
 				service:    mockBashService,
@@ -486,7 +506,13 @@ func TestBashUseCase_ExecBashList(t *testing.T) {
 				dto:    make([]dto.ExecBash, 1),
 			},
 			mockBehavior: func(ms *mock_service.MockIBashService, mh *mock_gosha.MockIHelper, mc *mock_common.MockICustomGoshaExec, ctx context.Context, isSync bool, dto []dto.ExecBash) {
-				ms.EXPECT().GetOneById(ctx, dto[0].Id).Return(&model.Bash{}, httpErrors.BashDoesNotExists)
+				ms.EXPECT().GetOneById(
+					ctx,
+					dto[0].Id,
+				).Return(
+					&model.Bash{},
+					httpErrors.BashDoesNotExists,
+				)
 			},
 			expected: expectedStruct{
 				err: httpErrors.BashDoesNotExists,
@@ -519,7 +545,14 @@ func TestBashUseCase_ExecBashList(t *testing.T) {
 			mockBashService := mock_service.NewMockIBashService(ctrl)
 			mockGoshaHelper := mock_gosha.NewMockIHelper(ctrl)
 			mockCustomGoshaExec := mock_common.NewMockICustomGoshaExec(ctrl)
-			testCase.mockBehavior(mockBashService, mockGoshaHelper, mockCustomGoshaExec, testCase.in.ctx, testCase.in.isSync, testCase.in.dto)
+			testCase.mockBehavior(
+				mockBashService,
+				mockGoshaHelper,
+				mockCustomGoshaExec,
+				testCase.in.ctx,
+				testCase.in.isSync,
+				testCase.in.dto,
+			)
 
 			bashUseCase := BashUseCase{
 				service:         mockBashService,

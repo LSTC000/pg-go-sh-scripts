@@ -11,6 +11,10 @@ import (
 )
 
 type IBashLogRepository interface {
-	GetPaginationPageByBashId(ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (alias.BashLogLimitOffsetPage, error)
+	GetPaginationPageByBashId(
+		ctx context.Context,
+		bashId uuid.UUID,
+		paginationParams pagination.LimitOffsetParams,
+	) (alias.BashLogLimitOffsetPage, error)
 	Create(ctx context.Context, dto dto.CreateBashLog) (*model.BashLog, error)
 }

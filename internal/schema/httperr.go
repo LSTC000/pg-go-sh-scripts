@@ -9,5 +9,10 @@ type HTTPError struct {
 }
 
 func (e *HTTPError) Error() string {
-	return fmt.Sprintf("HTTP Code: %d, Service code: %d, Detail: %s", e.HTTPCode, e.ServiceCode, e.Detail)
+	return fmt.Sprintf(
+		"HTTP Code: %d, Service code: %d, Detail: %s",
+		e.HTTPCode,
+		e.ServiceCode,
+		e.Detail,
+	)
 }

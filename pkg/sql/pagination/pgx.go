@@ -8,7 +8,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Paginate[T any](ctx context.Context, db *pgxpool.Pool, query string, params LimitOffsetParams, args ...any) (LimitOffsetPage[T], error) {
+func Paginate[T any](
+	ctx context.Context,
+	db *pgxpool.Pool,
+	query string,
+	params LimitOffsetParams,
+	args ...any,
+) (LimitOffsetPage[T], error) {
 	argsCount := len(args)
 
 	itemsArgs := make([]any, 0, argsCount+2)

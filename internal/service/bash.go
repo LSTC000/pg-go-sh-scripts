@@ -16,7 +16,10 @@ import (
 type (
 	IBashService interface {
 		GetOneById(ctx context.Context, id uuid.UUID) (*model.Bash, error)
-		GetPaginationPage(ctx context.Context, paginationParams pagination.LimitOffsetParams) (alias.BashLimitOffsetPage, error)
+		GetPaginationPage(
+			ctx context.Context,
+			paginationParams pagination.LimitOffsetParams,
+		) (alias.BashLimitOffsetPage, error)
 		Create(ctx context.Context, dto dto.CreateBash) (*model.Bash, error)
 		RemoveById(ctx context.Context, id uuid.UUID) (*model.Bash, error)
 	}
@@ -34,7 +37,10 @@ func (s *BashService) GetOneById(ctx context.Context, id uuid.UUID) (*model.Bash
 	return bash, nil
 }
 
-func (s *BashService) GetPaginationPage(ctx context.Context, paginationParams pagination.LimitOffsetParams) (alias.BashLimitOffsetPage, error) {
+func (s *BashService) GetPaginationPage(
+	ctx context.Context,
+	paginationParams pagination.LimitOffsetParams,
+) (alias.BashLimitOffsetPage, error) {
 	bashPaginationPage, err := s.repository.GetPaginationPage(ctx, paginationParams)
 	if err != nil {
 		return bashPaginationPage, err

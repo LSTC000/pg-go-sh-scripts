@@ -40,7 +40,15 @@ func (p PgBashRepository) GetOneById(ctx context.Context, id uuid.UUID) (*model.
 	if err := pgxscan.Get(ctx, p.db, bash, q, id); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Getting bash by id: %v Error: %s, Detail: %s, Where: %s", id, pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(
+				fmt.Sprintf(
+					"Getting bash by id: %v Error: %s, Detail: %s, Where: %s",
+					id,
+					pgErr.Message,
+					pgErr.Detail,
+					pgErr.Where,
+				),
+			)
 		} else {
 			p.logger.Error(fmt.Sprintf("Getting bash by id: %v Error: %s", id, err))
 		}
@@ -51,7 +59,10 @@ func (p PgBashRepository) GetOneById(ctx context.Context, id uuid.UUID) (*model.
 	return bash, nil
 }
 
-func (p PgBashRepository) GetPaginationPage(ctx context.Context, paginationParams pagination.LimitOffsetParams) (alias.BashLimitOffsetPage, error) {
+func (p PgBashRepository) GetPaginationPage(
+	ctx context.Context,
+	paginationParams pagination.LimitOffsetParams,
+) (alias.BashLimitOffsetPage, error) {
 	var bashPaginationPage alias.BashLimitOffsetPage
 
 	p.logger.Debug("Start getting bash pagination page")
@@ -66,7 +77,14 @@ func (p PgBashRepository) GetPaginationPage(ctx context.Context, paginationParam
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Getting bash pagination page Error: %s, Detail: %s, Where: %s", pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(
+				fmt.Sprintf(
+					"Getting bash pagination page Error: %s, Detail: %s, Where: %s",
+					pgErr.Message,
+					pgErr.Detail,
+					pgErr.Where,
+				),
+			)
 		} else {
 			p.logger.Error(fmt.Sprintf("Getting bash pagination page Error: %s", err))
 		}
@@ -92,7 +110,15 @@ func (p PgBashRepository) Create(ctx context.Context, dto dto.CreateBash) (*mode
 	if err := pgxscan.Get(ctx, p.db, bash, stmt, dto.Title, dto.Body); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Creating bash with title: %s Error: %s, Detail: %s, Where: %s", dto.Title, pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(
+				fmt.Sprintf(
+					"Creating bash with title: %s Error: %s, Detail: %s, Where: %s",
+					dto.Title,
+					pgErr.Message,
+					pgErr.Detail,
+					pgErr.Where,
+				),
+			)
 		} else {
 			p.logger.Error(fmt.Sprintf("Creating bash with title: %s Error: %s", dto.Title, err))
 		}
@@ -118,7 +144,15 @@ func (p PgBashRepository) RemoveById(ctx context.Context, id uuid.UUID) (*model.
 	if err := pgxscan.Get(ctx, p.db, bash, stmt, id); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			p.logger.Error(fmt.Sprintf("Removing bash by id: %v Error: %s, Detail: %s, Where: %s", id, pgErr.Message, pgErr.Detail, pgErr.Where))
+			p.logger.Error(
+				fmt.Sprintf(
+					"Removing bash by id: %v Error: %s, Detail: %s, Where: %s",
+					id,
+					pgErr.Message,
+					pgErr.Detail,
+					pgErr.Where,
+				),
+			)
 		} else {
 			p.logger.Error(fmt.Sprintf("Removing bash by id: %v Error: %s", id, err))
 		}

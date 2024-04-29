@@ -136,7 +136,9 @@ func TestBashHandler_GetBashById(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(
+				path.Join(bashTestDataDir, testCase.expected.golden+".golden"),
+			)
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}
@@ -258,7 +260,9 @@ func TestBashHandler_GetBashFileById(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(
+				path.Join(bashTestDataDir, testCase.expected.golden+".golden"),
+			)
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}
@@ -303,7 +307,12 @@ func TestBashHandler_GetBashList(t *testing.T) {
 				offsetExists:     true,
 			},
 			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, paginationParams pagination.LimitOffsetParams, err error) {
-				mu.EXPECT().GetBashPaginationPage(paginationParams).Return(alias.BashLimitOffsetPage{}, nil)
+				mu.EXPECT().GetBashPaginationPage(
+					paginationParams,
+				).Return(
+					alias.BashLimitOffsetPage{},
+					nil,
+				)
 			},
 			expected: expectedStruct{
 				golden: "default_pagination_page",
@@ -399,7 +408,12 @@ func TestBashHandler_GetBashList(t *testing.T) {
 				errors.As(err, &httpErr)
 
 				gomock.InOrder(
-					mu.EXPECT().GetBashPaginationPage(paginationParams).Return(alias.BashLimitOffsetPage{}, err),
+					mu.EXPECT().GetBashPaginationPage(
+						paginationParams,
+					).Return(
+						alias.BashLimitOffsetPage{},
+						err,
+					),
 					mh.EXPECT().ParseError(err).Return(httpErr),
 				)
 			},
@@ -419,7 +433,12 @@ func TestBashHandler_GetBashList(t *testing.T) {
 
 			mockBashUseCase := mock_usecase.NewMockIBashUseCase(ctrl)
 			mockApiHelper := mock_api.NewMockIHelper(ctrl)
-			testCase.mockBehavior(mockBashUseCase, mockApiHelper, testCase.in.paginationParams, testCase.in.httpErr)
+			testCase.mockBehavior(
+				mockBashUseCase,
+				mockApiHelper,
+				testCase.in.paginationParams,
+				testCase.in.httpErr,
+			)
 
 			bashHandler := BashHandler{
 				useCase:    mockBashUseCase,
@@ -446,7 +465,9 @@ func TestBashHandler_GetBashList(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(
+				path.Join(bashTestDataDir, testCase.expected.golden+".golden"),
+			)
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}
@@ -595,7 +616,9 @@ func TestBashHandler_CreateBash(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(
+				path.Join(bashTestDataDir, testCase.expected.golden+".golden"),
+			)
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}
@@ -720,7 +743,13 @@ func TestBashHandler_ExecBashList(t *testing.T) {
 
 			mockBashUseCase := mock_usecase.NewMockIBashUseCase(ctrl)
 			mockApiHelper := mock_api.NewMockIHelper(ctrl)
-			testCase.mockBehavior(mockBashUseCase, mockApiHelper, testCase.in.isSync, testCase.in.dto, testCase.in.httpErr)
+			testCase.mockBehavior(
+				mockBashUseCase,
+				mockApiHelper,
+				testCase.in.isSync,
+				testCase.in.dto,
+				testCase.in.httpErr,
+			)
 
 			bashHandler := BashHandler{
 				useCase:    mockBashUseCase,
@@ -753,7 +782,9 @@ func TestBashHandler_ExecBashList(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(
+				path.Join(bashTestDataDir, testCase.expected.golden+".golden"),
+			)
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}
@@ -867,7 +898,9 @@ func TestBashHandler_RemoveBashById(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(
+				path.Join(bashTestDataDir, testCase.expected.golden+".golden"),
+			)
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}

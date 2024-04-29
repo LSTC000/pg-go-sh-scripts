@@ -15,7 +15,11 @@ import (
 
 type (
 	IBashLogService interface {
-		GetPaginationPageByBashId(ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (alias.BashLogLimitOffsetPage, error)
+		GetPaginationPageByBashId(
+			ctx context.Context,
+			bashId uuid.UUID,
+			paginationParams pagination.LimitOffsetParams,
+		) (alias.BashLogLimitOffsetPage, error)
 		Create(ctx context.Context, dto dto.CreateBashLog) (*model.BashLog, error)
 	}
 
@@ -24,15 +28,26 @@ type (
 	}
 )
 
-func (s *BashLogService) GetPaginationPageByBashId(ctx context.Context, bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (alias.BashLogLimitOffsetPage, error) {
-	bashLogPaginationPage, err := s.repository.GetPaginationPageByBashId(ctx, bashId, paginationParams)
+func (s *BashLogService) GetPaginationPageByBashId(
+	ctx context.Context,
+	bashId uuid.UUID,
+	paginationParams pagination.LimitOffsetParams,
+) (alias.BashLogLimitOffsetPage, error) {
+	bashLogPaginationPage, err := s.repository.GetPaginationPageByBashId(
+		ctx,
+		bashId,
+		paginationParams,
+	)
 	if err != nil {
 		return bashLogPaginationPage, err
 	}
 	return bashLogPaginationPage, nil
 }
 
-func (s *BashLogService) Create(ctx context.Context, dto dto.CreateBashLog) (*model.BashLog, error) {
+func (s *BashLogService) Create(
+	ctx context.Context,
+	dto dto.CreateBashLog,
+) (*model.BashLog, error) {
 	bashLog, err := s.repository.Create(ctx, dto)
 	if err != nil {
 		return nil, err

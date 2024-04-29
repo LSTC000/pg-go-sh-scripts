@@ -14,7 +14,10 @@ import (
 
 type (
 	IBashLogUseCase interface {
-		GetBashLogPaginationPageByBashId(bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (alias.BashLogLimitOffsetPage, error)
+		GetBashLogPaginationPageByBashId(
+			bashId uuid.UUID,
+			paginationParams pagination.LimitOffsetParams,
+		) (alias.BashLogLimitOffsetPage, error)
 	}
 
 	BashLogUseCase struct {
@@ -24,7 +27,10 @@ type (
 	}
 )
 
-func (u *BashLogUseCase) GetBashLogPaginationPageByBashId(bashId uuid.UUID, paginationParams pagination.LimitOffsetParams) (alias.BashLogLimitOffsetPage, error) {
+func (u *BashLogUseCase) GetBashLogPaginationPageByBashId(
+	bashId uuid.UUID,
+	paginationParams pagination.LimitOffsetParams,
+) (alias.BashLogLimitOffsetPage, error) {
 	var bashLogPaginationPage alias.BashLogLimitOffsetPage
 
 	_, err := u.bashService.GetOneById(context.Background(), bashId)
@@ -32,7 +38,11 @@ func (u *BashLogUseCase) GetBashLogPaginationPageByBashId(bashId uuid.UUID, pagi
 		return bashLogPaginationPage, u.httpErrors.BashDoesNotExists
 	}
 
-	bashLogPaginationPage, err = u.service.GetPaginationPageByBashId(context.Background(), bashId, paginationParams)
+	bashLogPaginationPage, err = u.service.GetPaginationPageByBashId(
+		context.Background(),
+		bashId,
+		paginationParams,
+	)
 	if err != nil {
 		return bashLogPaginationPage, u.httpErrors.BashLogGetPaginationPageByBashId
 	}
