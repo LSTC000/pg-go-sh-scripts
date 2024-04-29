@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const bashlogGoldenDir = "bashlog_testdata"
+const bashlogTestDataDir = "bashlog_testdata"
 
 func TestBashLogHandler_GetBashLogListByBashId(t *testing.T) {
 	type (
@@ -226,7 +226,7 @@ func TestBashLogHandler_GetBashLogListByBashId(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashlogGoldenDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(path.Join(bashlogTestDataDir, testCase.expected.golden+".golden"))
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}

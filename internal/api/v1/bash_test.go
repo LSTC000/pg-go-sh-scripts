@@ -3,6 +3,8 @@ package v1
 import (
 	"bytes"
 	"errors"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -25,7 +27,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const bashGoldenDir = "bash_testdata"
+const (
+	bashTestFile    = "helloworld.sh"
+	bashTestDataDir = "bash_testdata"
+)
 
 func TestBashHandler_GetBashById(t *testing.T) {
 	type (
@@ -129,7 +134,7 @@ func TestBashHandler_GetBashById(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashGoldenDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}
@@ -251,7 +256,7 @@ func TestBashHandler_GetBashFileById(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashGoldenDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}
@@ -436,7 +441,155 @@ func TestBashHandler_GetBashList(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashGoldenDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
+			if err != nil {
+				t.Fatalf("%s Error: %s", t.Name(), err)
+			}
+			expectedBody := string(content)
+
+			assert.Equal(t, testCase.expected.code, recorder.Code)
+			assert.Equal(t, expectedBody, recorder.Body.String())
+		})
+	}
+}
+
+func TestBashHandler_CreateBash(t *testing.T) {
+	type (
+		inStruct struct {
+			isUploadFile bool
+			httpErr      error
+		}
+
+		expectedStruct struct {
+			golden string
+			code   int
+		}
+	)
+
+	httpErrors := config.GetHTTPErrors()
+
+	testCases := []struct {
+		name         string
+		in           inStruct
+		mockBehavior func(*mock_usecase.MockIBashUseCase, *mock_api.MockIHelper, error)
+		expected     expectedStruct
+	}{
+		{
+			name: "Success",
+			in: inStruct{
+				isUploadFile: true,
+				httpErr:      nil,
+			},
+			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, err error) {
+				mu.EXPECT().CreateBash(gomock.Any()).Return(&model.Bash{}, nil)
+			},
+			expected: expectedStruct{
+				golden: "default_bash",
+				code:   http.StatusOK,
+			},
+		},
+		{
+			name: "Uploading bash file error",
+			in: inStruct{
+				isUploadFile: false,
+				httpErr:      httpErrors.BashFileUpload,
+			},
+			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, err error) {
+				var httpErr *schema.HTTPError
+				errors.As(err, &httpErr)
+				mh.EXPECT().ParseError(err).Return(httpErr)
+			},
+			expected: expectedStruct{
+				golden: "upload_file_error",
+				code:   http.StatusBadRequest,
+			},
+		},
+		{
+			name: "Creating bash error",
+			in: inStruct{
+				isUploadFile: true,
+				httpErr:      httpErrors.BashCreate,
+			},
+			mockBehavior: func(mu *mock_usecase.MockIBashUseCase, mh *mock_api.MockIHelper, err error) {
+				var httpErr *schema.HTTPError
+				errors.As(err, &httpErr)
+				gomock.InOrder(
+					mu.EXPECT().CreateBash(gomock.Any()).Return(nil, err),
+					mh.EXPECT().ParseError(err).Return(httpErr),
+				)
+			},
+			expected: expectedStruct{
+				golden: "create_error",
+				code:   http.StatusBadRequest,
+			},
+		},
+	}
+
+	gin.SetMode(gin.TestMode)
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockBashUseCase := mock_usecase.NewMockIBashUseCase(ctrl)
+			mockApiHelper := mock_api.NewMockIHelper(ctrl)
+			testCase.mockBehavior(mockBashUseCase, mockApiHelper, testCase.in.httpErr)
+
+			bashHandler := BashHandler{
+				useCase:    mockBashUseCase,
+				helper:     mockApiHelper,
+				httpErrors: httpErrors,
+			}
+
+			handlerPath := groupBashPath + createBashPath
+
+			r := gin.New()
+			r.POST(handlerPath, bashHandler.CreateBash)
+
+			var (
+				recorder *httptest.ResponseRecorder
+				request  *http.Request
+			)
+
+			if testCase.in.isUploadFile {
+				var b bytes.Buffer
+				w := multipart.NewWriter(&b)
+
+				file, err := os.Open(path.Join(bashTestDataDir, bashTestFile))
+				if err != nil {
+					t.Fatalf("%s Error: %s", t.Name(), err)
+				}
+				defer func() {
+					if err := file.Close(); err != nil {
+						t.Fatalf("%s Error: %s", t.Name(), err)
+					}
+				}()
+
+				fw, err := w.CreateFormFile("file", file.Name())
+				if err != nil {
+					t.Fatalf("%s Error: %s", t.Name(), err)
+				}
+
+				_, err = io.Copy(fw, file)
+				if err != nil {
+					t.Fatalf("%s Error: %s", t.Name(), err)
+				}
+				if err := w.Close(); err != nil {
+					t.Fatalf("%s Error: %s", t.Name(), err)
+				}
+
+				recorder = httptest.NewRecorder()
+				request = httptest.NewRequest(http.MethodPost, handlerPath, &b)
+				request.Header.Add("Content-Type", w.FormDataContentType())
+			} else {
+				recorder = httptest.NewRecorder()
+				request = httptest.NewRequest(http.MethodPost, handlerPath, nil)
+			}
+
+			r.ServeHTTP(recorder, request)
+
+			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}
@@ -550,7 +703,7 @@ func TestBashHandler_RemoveBashById(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			content, err := os.ReadFile(path.Join(bashGoldenDir, testCase.expected.golden+".golden"))
+			content, err := os.ReadFile(path.Join(bashTestDataDir, testCase.expected.golden+".golden"))
 			if err != nil {
 				t.Fatalf("%s Error: %s", t.Name(), err)
 			}
