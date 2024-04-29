@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"context"
 	"mime/multipart"
+	"os"
+	"path"
+	mock_common "pg-sh-scripts/internal/common/mock"
 	"pg-sh-scripts/internal/config"
 	"pg-sh-scripts/internal/dto"
 	"pg-sh-scripts/internal/model"
@@ -11,6 +14,7 @@ import (
 	"pg-sh-scripts/internal/type/alias"
 	"pg-sh-scripts/internal/util"
 	mock_util "pg-sh-scripts/internal/util/mock"
+	mock_gosha "pg-sh-scripts/pkg/gosha/mock"
 	"pg-sh-scripts/pkg/sql/pagination"
 	"testing"
 
@@ -20,6 +24,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	_ "github.com/stretchr/testify/assert"
+)
+
+const (
+	bashTestFile    = "helloworld.sh"
+	bashTestDataDir = "bash_testdata"
 )
 
 func TestBashUseCase_GetBashById(t *testing.T) {
@@ -419,6 +428,108 @@ func TestBashUseCase_CreateBash(t *testing.T) {
 			bash, err := bashUseCase.CreateBash(testCase.in.file)
 
 			assert.Equal(t, testCase.expected.bash, bash)
+			assert.Equal(t, testCase.expected.err, err)
+		})
+	}
+}
+
+func TestBashUseCase_ExecBashList(t *testing.T) {
+	type (
+		inStruct struct {
+			ctx    context.Context
+			isSync bool
+			dto    []dto.ExecBash
+		}
+
+		expectedStruct struct {
+			err error
+		}
+	)
+
+	httpErrors := config.GetHTTPErrors()
+
+	testCases := []struct {
+		name         string
+		in           inStruct
+		mockBehavior func(*mock_service.MockIBashService, *mock_gosha.MockIHelper, *mock_common.MockICustomGoshaExec, context.Context, bool, []dto.ExecBash)
+		expected     expectedStruct
+	}{
+		{
+			name: "Success",
+			in: inStruct{
+				ctx:    context.Background(),
+				isSync: true,
+				dto:    make([]dto.ExecBash, 1),
+			},
+			mockBehavior: func(ms *mock_service.MockIBashService, mh *mock_gosha.MockIHelper, mc *mock_common.MockICustomGoshaExec, ctx context.Context, isSync bool, dto []dto.ExecBash) {
+				f, err := os.OpenFile(path.Join(bashTestDataDir, bashTestFile), os.O_RDONLY, 0666)
+				if err != nil {
+					t.Fatalf("%s Error: %s", t.Name(), err)
+				}
+
+				gomock.InOrder(
+					ms.EXPECT().GetOneById(ctx, dto[0].Id).Return(&model.Bash{}, nil),
+					mh.EXPECT().GetTmpFile(gomock.Any()).Return(f, nil),
+					mc.EXPECT().Run(isSync, gomock.Any()),
+					mh.EXPECT().RemoveTmpFile(gomock.Any()).Return(nil),
+				)
+			},
+			expected: expectedStruct{
+				err: nil,
+			},
+		},
+		{
+			name: "Getting bash does not exists error",
+			in: inStruct{
+				ctx:    context.Background(),
+				isSync: true,
+				dto:    make([]dto.ExecBash, 1),
+			},
+			mockBehavior: func(ms *mock_service.MockIBashService, mh *mock_gosha.MockIHelper, mc *mock_common.MockICustomGoshaExec, ctx context.Context, isSync bool, dto []dto.ExecBash) {
+				ms.EXPECT().GetOneById(ctx, dto[0].Id).Return(&model.Bash{}, httpErrors.BashDoesNotExists)
+			},
+			expected: expectedStruct{
+				err: httpErrors.BashDoesNotExists,
+			},
+		},
+		{
+			name: "Executing bash error",
+			in: inStruct{
+				ctx:    context.Background(),
+				isSync: true,
+				dto:    make([]dto.ExecBash, 1),
+			},
+			mockBehavior: func(ms *mock_service.MockIBashService, mh *mock_gosha.MockIHelper, mc *mock_common.MockICustomGoshaExec, ctx context.Context, isSync bool, dto []dto.ExecBash) {
+				gomock.InOrder(
+					ms.EXPECT().GetOneById(ctx, dto[0].Id).Return(&model.Bash{}, nil),
+					mh.EXPECT().GetTmpFile(gomock.Any()).Return(nil, httpErrors.BashExecute),
+				)
+			},
+			expected: expectedStruct{
+				err: httpErrors.BashExecute,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockBashService := mock_service.NewMockIBashService(ctrl)
+			mockGoshaHelper := mock_gosha.NewMockIHelper(ctrl)
+			mockCustomGoshaExec := mock_common.NewMockICustomGoshaExec(ctrl)
+			testCase.mockBehavior(mockBashService, mockGoshaHelper, mockCustomGoshaExec, testCase.in.ctx, testCase.in.isSync, testCase.in.dto)
+
+			bashUseCase := BashUseCase{
+				service:         mockBashService,
+				goshaHelper:     mockGoshaHelper,
+				customGoshaExec: mockCustomGoshaExec,
+				httpErrors:      httpErrors,
+			}
+
+			err := bashUseCase.ExecBashList(testCase.in.isSync, testCase.in.dto)
+
 			assert.Equal(t, testCase.expected.err, err)
 		})
 	}
